@@ -1,0 +1,40 @@
+#ifndef DEF_RESOURCE_H // Si la constante n'a pas été définie le fichier n'a jamais été inclus
+#define DEF_RESOURCE_H // On définit la constante pour que la prochaine fois le fichier ne soit plus inclus
+
+
+//Commande
+class Resource
+{
+public:
+// constructor
+  Resource();
+  //on fournit l'Id sous differentes formes
+  Resource(char*);
+  Resource(int);
+    // Destructor, its just empty
+  ~Resource(void){};
+
+ //Accesseurs get
+ char* getResourceNo(void);
+ char* getResourceType(void);
+ char* getResourceName(void);
+ int getResourceId(void);
+ char* getResourceStatus(void);
+ int getResourceStatusId(void);
+
+ //Accesseurs Set
+ void setResourceNo(char *);
+ void setResourceId(int);
+ void setResourceName(char *);
+ void setResourceStatusId(int);
+ void setResourceStatus(char *);
+ void setResourceType(char *);
+
+protected:
+	int myResourceId;
+	char myResourceType[2];	
+	char myResourceStatus[51];
+	int myResourceStatusId;
+
+};
+#endif
