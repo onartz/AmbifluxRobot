@@ -480,35 +480,7 @@
 		<Filter
 			Name="Statechart Header Files"
 			>
-			<File
-				RelativePath="..\..\..\..\..\..\Temp\boost_1_54_0\boost_1_54_0\boost\statechart\deferral.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\..\Temp\boost_1_54_0\boost_1_54_0\boost\statechart\simple_state.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\..\Temp\boost_1_54_0\boost_1_54_0\boost\statechart\state.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\..\Temp\boost_1_54_0\boost_1_54_0\boost\statechart\state_machine.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\..\Temp\boost_1_54_0\boost_1_54_0\boost\statechart\transition.hpp"
-				>
-			</File>
 		</Filter>
-		<File
-			RelativePath="..\LocalTestRun.testrunconfig"
-			>
-		</File>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
