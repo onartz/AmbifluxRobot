@@ -19,6 +19,4 @@ Args(pArgs)
 	
 }
 
-//string CommandeRobot::getArgs(){return args;};
-//vector<string> CommandeRobot::getVArgs(){return vArgs;};
-//CommandeRobot::COMMANDE_TYPE CommandeRobot::getType(){return myType;};
+

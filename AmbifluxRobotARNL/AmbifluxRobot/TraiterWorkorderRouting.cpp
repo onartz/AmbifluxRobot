@@ -39,11 +39,14 @@ void TraiterWorkorderRouting::handler()
 		case STATE_TRANSPORT_START:
 			ArLog::log(ArLog::Verbose, "Entering STATE_TRANSPORT_START\n");
 			//Initialisation de la position cible
-			nextLocationName = myWorkorderRouting.getLocation().getLocationName();
+			strcpy(nextLocationName, myWorkorderRouting.getLocation().getLocationName());
+			
+			//nextLocationName = myWorkorderRouting.getLocation().getLocationName();
 			
 			//Initialisation du WorkorderRouting
 			myWorkorderRouting.setResource(&mySrma);			
 			myWorkorderRouting.start();
+
 			ArLog::log(ArLog::Verbose, "WorkorderRouting %s demarre\n",myWorkorderRouting.getWorkorderRoutingNo());
 			DALRest::updateWorkorderRouting(&myWorkorderRouting);		
 			mySrma.SendCommand(CommandeRobot(CommandeRobot::AUTODOCK,"DISABLE"));
@@ -64,7 +67,7 @@ void TraiterWorkorderRouting::handler()
 				if(myNewState)
 				{
 					myNewState = false;	
-					nextLocationName = myWorkorderRouting.getLocation().getLocationName();
+					//nextLocationName = myWorkorderRouting.getLocation().getLocationName();
 					ArLog::log(ArLog::Verbose, "Entering STATE_TRANSPORT_DEMANDE_DEPLACEMENT");				
 					mySrma.SendCommand(CommandeRobot(CommandeRobot::GOTOGOAL,nextLocationName ));
 					//setState(STATE_TRANSPORT_P);
@@ -113,7 +116,7 @@ void TraiterWorkorderRouting::handler()
 			if(myNewState)
 			{
 				myNewState = false;	
-				nextLocationName = myWorkorderRouting.getLocation().getLocationName();
+				//nextLocationName = myWorkorderRouting.getLocation().getLocationName();
 				ArLog::log(ArLog::Verbose, "Entering STATE_TRANSPORT_DEPLACEMENT");				
 				break;
 			}
@@ -124,8 +127,6 @@ void TraiterWorkorderRouting::handler()
 			}
 			break;
 			
-		
-
 
 		case STATE_TRANSPORT_FIN:
 			ArLog::log(ArLog::Verbose, "Entering STATE_TRANSPORT_FIN\n");

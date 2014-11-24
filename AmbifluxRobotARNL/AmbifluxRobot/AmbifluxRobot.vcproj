@@ -347,10 +347,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Include\clientTCP.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Include\CommandeRobot.h"
 				>
 			</File>
@@ -419,10 +415,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Include\sqlUtil.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Include\SRMA.h"
 				>
 			</File>
@@ -476,10 +468,6 @@
 				Name="Boost"
 				>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="Statechart Header Files"
-			>
 		</Filter>
 	</Files>
 	<Globals>

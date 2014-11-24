@@ -6,7 +6,6 @@
 using namespace std;
 
 //Constructors
-
 IhmCommunicationThread::IhmCommunicationThread(int port, Pool<TCPReceivedRequest>* messagePool ):
 myMessagePool(messagePool),
 myHandleMsgReceivedCB(this,&IhmCommunicationThread::handleMsgReceived),
@@ -16,40 +15,32 @@ myHandleSocketClosedCB(this, &IhmCommunicationThread::handleSocketClosed)
 		myRunning = true;
 		myServer.open(NULL,port,"ipad",true);
 		myServer.squelchNormal();
-		//myServer.addCommand("Connexion",&myHandleMsgReceivedCB,"Demande connexion\n");
 		myServer.addCommand("Close",&myHandleMsgReceivedCB,"Close\n");
-		//myServer.addCommand("SetMode",&myHandleMsgReceivedCB,"SetMode\n");
-		//myServer.addCommand("QuitMode",&myHandleMsgReceivedCB,"QuitMode\n");
 		myServer.addCommand("Info",&myHandleMsgReceivedCB,"Info\n");
-		//myServer.addCommand("GetObject",&myHandleMsgReceivedCB,"GetObject\n");
-		//myServer.addCommand("GetObjectList",&myHandleMsgReceivedCB,"GetObjectList\n");
-		//myServer.addCommand("SetObject",&myHandleMsgReceivedCB,"SetObject\n");
-		//myServer.addCommand("RequeteSRMA",&myHandleMsgReceivedCB,"RequeteSRMA\n");
 		myServer.addCommand("Form",&myHandleMsgReceivedCB,"Formulaire ouvert\n");
-		
-		//Try to connect to IHM
-		connect();
-		
-		
+		//Todo : faire pour que ça marche
+		mySocket.setCloseCallback(&myHandleSocketClosedCB);
 }
 
-	//Pour pouvoir s'abonner
-	void IhmCommunicationThread::setCallback(ArGlobalFunctor1<Frame> *functorMsgReceived)
-	{
-		functMessageReceived = functorMsgReceived;
-	}
+//Pour pouvoir s'abonner
+void IhmCommunicationThread::setMsgReceivedCallback(ArGlobalFunctor1<Frame> *functorMsgReceived)
+{
+	functMessageReceived = functorMsgReceived;
+}
 
 	IhmCommunicationThread::~IhmCommunicationThread(){}
 
-	//CAllback
+//Callback called when socket is closed by server 
 void IhmCommunicationThread::handleSocketClosed()
 {
-	ArLog::log(ArLog::Verbose, "Socket closde by server");
+	ArLog::log(ArLog::Verbose, "Socket closed by server");
 	myIhmCommunicationStatus = false;
-
 }
 
-//Getter
+//Getters
+int IhmCommunicationThread::getConnexionStatus(){return myConnexionStatus;};
+
+//Getters
 bool IhmCommunicationThread::isIhmConnected(){return myIhmCommunicationStatus;}
 
 
@@ -64,7 +55,6 @@ void *IhmCommunicationThread::runThread(void *arg)
 	{
 		myServer.runOnce();
 		ArUtil::sleep(100);
-	
 	}
 
   // return out here, means the thread is done
@@ -75,104 +65,16 @@ void *IhmCommunicationThread::runThread(void *arg)
 	 // This callback is called when a new message arrives
 	void IhmCommunicationThread::handleMsgReceived(char ** msg, int nbArgs, ArSocket *sock)
 	{
-		//this->lockMutex();
 		ArLog::log(ArLog::Verbose, "Received : %s\n",msg[1]);
-		
-		//ArLog::log(ArLog::Verbose, "Received : %s\n",frameToChar(Frame(msg, nbArgs)));
-		
 		//ThreadSafe
 		myMessagePool->push(TCPReceivedRequest(sock, Frame(msg, nbArgs)));
-		//this->unlockMutex();
 	};
 
-	// This callback is called when a "Form" message arrives
-	
-	/*void IhmCommunicationThread::handleFormReceived(char **msg, int nbArgs, ArSocket *sock){
-		
-		//std::cout << sock << endl;
-		Frame f;
-		f.msg = msg;
-		f.nbArgs = nbArgs;
-		
-		
-	};*/
 	
 void IhmCommunicationThread::lockMutex(){myMutex.lock();};
 void IhmCommunicationThread::unlockMutex(){myMutex.unlock();};
 
 
-//int IhmCommunicationThread::sendRequest(Frame frame)
-//{
-//	//Requete envoyée
-//	char* request;
-//	string response="";
-//	//Buffer de réception
-//	char buff[512];
-//	char *ptr=NULL;
-//	 // The size of the string the server sent
-//	size_t strSize;
-//	//ArSocket sock;
-//	//Si pas de connexion
-//	if(myIhmCommunicationStatus == false)
-//	{
-//		if(!(mySocket.connect(HOSTIPADDRESS,PORT,ArSocket::TCP,0)))
-//		{
-//			return 1;
-//		}
-//		myIhmCommunicationStatus = true;
-//	
-//		//Todo : Enlever
-//
-//		mySocket.write("ipad",sizeof("ipad"));
-//		ArUtil::sleep(200);
-//	}
-//
-//	//Création de la requête
-////	sprintf(request,"GET %s%s/%d HTTP/1.1\r\nHost: %s\r\n\r\n",SERVICE,(char*)requestType.c_str(),param,HOSTWEBADDRESS);
-//	//request = frameToChar(frame);
-//	//frame.msg.
-//	
-//	//Envoi de la requete
-//	sock.write(request,sizeof(request));
-//
-//	//lecture de la réponse (OK\r\n)
-//
-//	if(strcmp(sock.readString(),"OK")!=0)
-//	{
-//			//sock.close();
-//			ArLog::log(ArLog::Verbose, "socketClientExample: Server error: \r\n%s", buff);
-//			return(2);
-//	}
-//
-//	//strSize=sock.read(buff,sizeof(buff)-1);
-//	//buff[strSize]='\0';
-//
-//	//Réponse OK, on lit ce qui arrive 
-//	while((strSize=sock.read(buff,sizeof(buff)-1))>0)
-//	{
-//		buff[strSize]='\0';		
-//		response+=string(buff);
-//	}
-//
-//	//Si réponse vide
-//	ptr=strstr(buff,"\r\n\r\n");
-//	
-//	if(ptr==NULL)
-//	{
-//		return 3;
-//	}
-//
-//	char *ptrFin=strstr(buff,"\r\n\r\n");
-//	if(ptrFin!=NULL)
-//		*(ptrFin+sizeof(char))='\0';
-//
-//	std::string s(ptr+sizeof("\r\n\r\n")-1);
-//
-//	return 0;
-//};
-//
-//
-//
 
 int IhmCommunicationThread::connect()
 {
@@ -188,8 +90,7 @@ int IhmCommunicationThread::connect()
 
 		myIhmCommunicationStatus = true;
 		//On s'abonne a la perte de connexion
-		//Todo : faire pour que ça marche
-		mySocket.setCloseCallback(&myHandleSocketClosedCB);
+		
 
 		ArLog::log(ArLog::Verbose, "Connected to the server %s", mySocket.getIPString());
 
@@ -350,7 +251,78 @@ void IhmCommunicationThread::testCommunication()
 
 };
 	
-
+//int IhmCommunicationThread::sendRequest(Frame frame)
+//{
+//	//Requete envoyée
+//	char* request;
+//	string response="";
+//	//Buffer de réception
+//	char buff[512];
+//	char *ptr=NULL;
+//	 // The size of the string the server sent
+//	size_t strSize;
+//	//ArSocket sock;
+//	//Si pas de connexion
+//	if(myIhmCommunicationStatus == false)
+//	{
+//		if(!(mySocket.connect(HOSTIPADDRESS,PORT,ArSocket::TCP,0)))
+//		{
+//			return 1;
+//		}
+//		myIhmCommunicationStatus = true;
+//	
+//		//Todo : Enlever
+//
+//		mySocket.write("ipad",sizeof("ipad"));
+//		ArUtil::sleep(200);
+//	}
+//
+//	//Création de la requête
+////	sprintf(request,"GET %s%s/%d HTTP/1.1\r\nHost: %s\r\n\r\n",SERVICE,(char*)requestType.c_str(),param,HOSTWEBADDRESS);
+//	//request = frameToChar(frame);
+//	//frame.msg.
+//	
+//	//Envoi de la requete
+//	sock.write(request,sizeof(request));
+//
+//	//lecture de la réponse (OK\r\n)
+//
+//	if(strcmp(sock.readString(),"OK")!=0)
+//	{
+//			//sock.close();
+//			ArLog::log(ArLog::Verbose, "socketClientExample: Server error: \r\n%s", buff);
+//			return(2);
+//	}
+//
+//	//strSize=sock.read(buff,sizeof(buff)-1);
+//	//buff[strSize]='\0';
+//
+//	//Réponse OK, on lit ce qui arrive 
+//	while((strSize=sock.read(buff,sizeof(buff)-1))>0)
+//	{
+//		buff[strSize]='\0';		
+//		response+=string(buff);
+//	}
+//
+//	//Si réponse vide
+//	ptr=strstr(buff,"\r\n\r\n");
+//	
+//	if(ptr==NULL)
+//	{
+//		return 3;
+//	}
+//
+//	char *ptrFin=strstr(buff,"\r\n\r\n");
+//	if(ptrFin!=NULL)
+//		*(ptrFin+sizeof(char))='\0';
+//
+//	std::string s(ptr+sizeof("\r\n\r\n")-1);
+//
+//	return 0;
+//};
+//
+//
+//
 
 
 //list<IhmCommunicationThread::Frame> * IhmCommunicationThread::getIncomingCmdList(){return &myIncomingCmdList;};

@@ -88,8 +88,8 @@ protected:
 	ArTime myCycleStartTime;
 
 	//Toutes ces variables sont obligatoirement ici à cause du handler()
-	Location nextLocation;
-	char *nextLocationName;
+	//Location nextLocation;
+	char nextLocationName[64];
 	
 	int retCode;
 

@@ -41,95 +41,63 @@ FAILED\r\nGetActiveForm\r\n\r\n
 //iMAc
 //#define HOSTIPADDRESS	"10.10.68.127"
 //ipad
-#define HOSTIPADDRESS	"10.10.68.2"
+//#define HOSTIPADDRESS	"10.10.68.2"
 //Local
-//#define HOSTIPADDRESS	"127.0.0.1"
+#define HOSTIPADDRESS	"127.0.0.1"
 //Portable
 //#define HOSTIPADDRESS	"10.10.68.5"
 
 #define TIMEOUT	1000
-
-
 using namespace std;
-
-//namespace Ambiflux
-//{
 	
 class IhmCommunicationThread : public ArASyncTask
 {
 public :
-	// Définit un type de structure
-	//struct Frame
-	//{
-	//public : 
-	//	Frame();
-	//	Frame(char**, int);
-	//	std::vector<std::string> msg;
-	//	//char* msg[32];
-	//	//int nbArgs;
-	//};
-	
-	/*IhmCommunicationThread(list<Frame> *, ArMutex *mutex);*/
+	//Constructor
 	IhmCommunicationThread(int port, Pool<TCPReceivedRequest> *);
-	IhmCommunicationThread(int port);
 	virtual ~IhmCommunicationThread();
 	virtual void * runThread(void *arg);
-	//list<Frame> * getIncomingCmdList();
 	void lockMutex();
 	void unlockMutex();
-	void setCallback(ArGlobalFunctor1<Frame> *);
-	//int sendRequest(Frame);
 	int sendRequest(char*);
 	char* frameToChar(Frame);
-	
-	bool isIhmConnected();
-	//list<Frame>& getIncomingCmdList();
-	
 	void testCommunication();
 
+	//Connexion à l'Ipad
+	int connect();
 
-private :
-/* Liste des messages recus de la tablette */
+	//Setters
+	void setMsgReceivedCallback(ArGlobalFunctor1<Frame> *);
+
+	//Getters
+	bool isIhmConnected();
+	int getConnexionStatus();
 	
-	//Frame myFrame;
+private :
+	/* Liste des messages recus de la tablette */
 	Pool<TCPReceivedRequest> * myMessagePool;
 	size_t num_items;
-
-	//list<Frame> myIncomingCmdList;
 	ArMutex myMutex;
+	//Server for iPad as a client
 	ArNetServer myServer;
 	bool myRunning;
 
-	
 protected :
 	// functor a declencher
 	//Global functor
 	ArFunctor1<Frame>* functMessageReceived;
 	bool myIhmCommunicationStatus;
 	
-	//Socket closed by the server Callback
+	//Functors
 	ArFunctorC<IhmCommunicationThread> myHandleSocketClosedCB;
-	void handleSocketClosed();
-
 	ArFunctor3C<IhmCommunicationThread,char **, int, ArSocket *> myHandleMsgReceivedCB;
-	//ArFunctor3C<IhmCommunicationThread,char **, int, ArSocket *> myHandleFormReceivedCB;
-	//ArFunctor3C<IhmCommunicationThread,char **, int, ArSocket *> myHandleConnexionReceivedCB;
  // This callback is called when a new message arrives
 	void handleMsgReceived(char **, int, ArSocket *);
+	//This callback is called when the socket has been closed by server
+	void handleSocketClosed();
 	//Socket pour com tablette
 	ArSocket mySocket;
-
-	int connect();
-
-	
-	
-	
-	// This callback is called when a "Form" message arrives
-	//void handleFormReceived(char **, int, ArSocket *);
-	// This callback is called when a "Connexion" message arrives
-	//void handleConnexionReceived(char **, int, ArSocket *);
-	//void addToIncomingCmd(Frame);
+	int myConnexionStatus;
 
 };
-//}
 #endif

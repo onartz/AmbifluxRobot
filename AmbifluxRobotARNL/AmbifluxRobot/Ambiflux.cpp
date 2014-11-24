@@ -22,11 +22,11 @@ void escape(void)
 }
 
 void queueNowEmpty() {
-  printf("The sound queue is now empty.\n");
+  //printf("The sound queue is now empty.\n");
 }
 
 void queueNowNonempty() {
-  printf("The sound queue is now non-empty.\n");
+  //printf("The sound queue is now non-empty.\n");
 }
 
 bool no() {
@@ -129,9 +129,14 @@ int main(int argc, char **argv)
   //Todo : A supprimer ?
   //ArGlobalFunctor1<Frame> functMessageReceived(&CallbackIhmReceived);
   //ihm.setCallback(&functMessageReceived);
-  ihm.runAsync();
+  while(!ihm.connect()==0)
+  {
+  //if(ihm.connect()!=0)
+	soundQueue.play("c:\\temp\\ShortCircuit.wav");
+	ArUtil::sleep(2000);
+  }
 
-  //soundQueue.play("c:\\temp\\let_me_out.wav");
+  ihm.runAsync();
 
   
 
@@ -227,6 +232,8 @@ if(!client.dataExists("gotoGoal") )
   //pour tester IHM
  // ArUtil::sleep(1000);
 //  ihm.testCommunication();
+ 
+
 
 	//SRMA object
 	string strSRMA = DALRest::getResourceById("9");

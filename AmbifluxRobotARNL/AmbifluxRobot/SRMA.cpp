@@ -228,7 +228,6 @@ void SRMA::play(SOUNDS sound)
 			case BLIP:
 				play(FILE_BLIP);
 				break;
-
 			default:
 				break;
 		}
@@ -237,84 +236,5 @@ void SRMA::play(SOUNDS sound)
 	{
 		ArLog::log(ArLog::Verbose, ex.what());
 	}
-
-
 }
-//void SRMA::gotoGoal(const char * goal)
-//{
-//	ArTime startTime;
-//	
-//	char msgArrivedAt[256];
-//	char msgFailedToGetTo[256];
-//	char msgGoingTo[256];
-//	//char tmpStatus[256];
-//
-//	//Initialisation des messages attendus du robot
-//	sprintf(msgGoingTo,"Going to %s\0",goal);
-//	sprintf(msgArrivedAt,"Arrived at %s\0",goal);
-//	sprintf(msgFailedToGetTo,"Failed to get to %s\0",goal);
-//
-//
-//	//Si le robot déjà à la position demandée, on ne fait rien
-//	if(isStateArrivedAt(goal)){
-//		myEndGotoGoalFunctor->invoke(msgArrivedAt);
-//	//if(strcmp(msgArrivedAt,myOutputHandler.getStatus())==0)
-//		//return(RET_ARRIVED_AT);
-//		return;
-//	}
-//
-//	//Sinon
-//	/*******************************************/
-//	/* 1- Envoyer ordre deplacement            */
-//	/*******************************************/
-//	//Envoi ordre de deplacement
-//	SendCommand(CommandeRobot::CommandeRobot(CommandeRobot::GOTOGOAL, goal));	
-//		
-//	//Le robot peut être docké
-//	//Attente que le robot renvoie goingTo
-//	startTime.setToNow();
-//	//Déclenche le CB
-//	
-//	while(!isStateGoingTo(goal))
-//	{
-//		if(startTime.mSecSince() > 5000)
-//			break;
-//	}
-//	/********************************************/
-//	/* 1-1 Ordre non pris en compte				*/
-//	/* On ne doit jamais passer par là!!		*/
-//	/********************************************/
-//	if(startTime.mSecSince() > 8000)
-//	{
-//		ArLog::log(ArLog::Verbose,"Timeout ordre robot : t=%d/5000",startTime.mSecSince());
-//		//ArLog::log(ArLog::Verbose,"Timeout ordre robot\n");
-//		myEndGotoGoalFunctor->invoke("Erreur");
-//		return;
-//	}
-//
-//	//int cptTimeOutDeplacement(TIMEOUT_DEPLACEMENT);
-//
-//	/*************************************************/
-//	/* 2- Attente Arrivée robot à la position ou non */
-//	/*************************************************/
-//	myEndGotoGoalFunctor->invoke(msgGoingTo);
-//	while(isStateGoingTo(goal))
-//	{
-//		ArUtil::sleep(100);
-//	}
-//
-//	/************************************************/
-//	/* 2-1 Robot  arrivé							*/
-//	/************************************************/
-//	if(isStateArrivedAt(goal))
-//	{
-//		myEndGotoGoalFunctor->invoke(msgArrivedAt);
-//		return;
-//	}	
-//	/*************************************************/
-//	/* 2-3 Autre message							 */
-//	/*************************************************/
-//	myEndGotoGoalFunctor->invoke(msgFailedToGetTo);
-//	return;
-//}
-//
+
