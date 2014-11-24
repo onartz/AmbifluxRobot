@@ -129,6 +129,7 @@ int main(int argc, char **argv)
   //Todo : A supprimer ?
   //ArGlobalFunctor1<Frame> functMessageReceived(&CallbackIhmReceived);
   //ihm.setCallback(&functMessageReceived);
+  
   while(!ihm.connect()==0)
   {
   //if(ihm.connect()!=0)
@@ -136,9 +137,7 @@ int main(int argc, char **argv)
 	ArUtil::sleep(2000);
   }
 
-  ihm.runAsync();
-
-  
+  ihm.runAsync(); 
 
   //while(true);
 

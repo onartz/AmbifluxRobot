@@ -19,7 +19,10 @@ myHandleSocketClosedCB(this, &IhmCommunicationThread::handleSocketClosed)
 		myServer.addCommand("Info",&myHandleMsgReceivedCB,"Info\n");
 		myServer.addCommand("Form",&myHandleMsgReceivedCB,"Formulaire ouvert\n");
 		//Todo : faire pour que ça marche
+		
 		mySocket.setCloseCallback(&myHandleSocketClosedCB);
+		//mySocket.
+		//&myHandleSocketClosedCB = mySocket.getCloseCallback();
 }
 
 //Pour pouvoir s'abonner
@@ -30,7 +33,7 @@ void IhmCommunicationThread::setMsgReceivedCallback(ArGlobalFunctor1<Frame> *fun
 
 	IhmCommunicationThread::~IhmCommunicationThread(){}
 
-//Callback called when socket is closed by server 
+//Callback called when mysocket is closed
 void IhmCommunicationThread::handleSocketClosed()
 {
 	ArLog::log(ArLog::Verbose, "Socket closed by server");
@@ -47,8 +50,6 @@ bool IhmCommunicationThread::isIhmConnected(){return myIhmCommunicationStatus;}
 //Thread du serveur
 void *IhmCommunicationThread::runThread(void *arg)
 {
-
-	//this->threadStarted();
 	std::cout << "Thread IhmCommunicationThread running\n";
 	
 	while (myRunning==true)
@@ -62,13 +63,13 @@ void *IhmCommunicationThread::runThread(void *arg)
 }
 
 
-	 // This callback is called when a new message arrives
-	void IhmCommunicationThread::handleMsgReceived(char ** msg, int nbArgs, ArSocket *sock)
-	{
-		ArLog::log(ArLog::Verbose, "Received : %s\n",msg[1]);
-		//ThreadSafe
-		myMessagePool->push(TCPReceivedRequest(sock, Frame(msg, nbArgs)));
-	};
+// This callback is called when a new message arrives
+void IhmCommunicationThread::handleMsgReceived(char ** msg, int nbArgs, ArSocket *sock)
+{
+	ArLog::log(ArLog::Verbose, "Received : %s\n",msg[1]);
+	//ThreadSafe
+	myMessagePool->push(TCPReceivedRequest(sock, Frame(msg, nbArgs)));
+};
 
 	
 void IhmCommunicationThread::lockMutex(){myMutex.lock();};
@@ -88,9 +89,7 @@ int IhmCommunicationThread::connect()
 		if(!(mySocket.connect(HOSTIPADDRESS,PORT,ArSocket::TCP,0)))
 			return mySocket.getError();
 
-		myIhmCommunicationStatus = true;
-		//On s'abonne a la perte de connexion
-		
+		myIhmCommunicationStatus = true;		
 
 		ArLog::log(ArLog::Verbose, "Connected to the server %s", mySocket.getIPString());
 
@@ -122,6 +121,7 @@ int IhmCommunicationThread::connect()
 				return(-1);
 			  }
 		}
+		
 	}
 	return 0;
 }
@@ -141,9 +141,9 @@ int IhmCommunicationThread::sendRequest(char* request)
 	
 	//Connexion to the server if necessary
 	//while(!connect() == 0)
-	if(!myIhmCommunicationStatus)
-		if(connect() != 0)
-			return(-1);
+	//if(myIhmCommunicationStatus == false)
+		//if(connect() != 0)
+			//return(-1);
 		
 	
 	//Envoi de la requete
