@@ -29,6 +29,7 @@ void TraiterWorkorderRouting::handler()
 	//char bufr[256];
 	TCPReceivedRequest req;
 	myCycleStartTime.setToNow();
+	string response="";
 	//Frame f;
 	switch(myState)
 	{
@@ -175,39 +176,36 @@ void TraiterWorkorderRouting::handler()
 		-------------------------------------------------------------*/
 		case STATE_CHARGEMENT_START:
 			ArLog::log(ArLog::Verbose, "Entering STATE_CHARGEMENT_START\n");		
+			//ArLog::log(ArLog::Verbose, "WorkorderRouting %s demarre\n",myWorkorderRouting.getWorkorderRoutingNo());
 			myWorkorderRouting.start();
-			ArLog::log(ArLog::Verbose, "WorkorderRouting %s demarre\n",myWorkorderRouting.getWorkorderRoutingNo());
-			//TODO : Décommenter
-			//DALRest::updateWorkorderRouting(&myWorkorderRouting);
-			
-			setState(STATE_CHARGEMENT_IDENTIFICATION);			
+			DALRest::updateWorkorderRouting(&myWorkorderRouting);
+			setState(STATE_CHARGEMENT_IDENTIFICATION);	
+			mySrma.play(SRMA::MSG_ARRIVED);	
 			break;
 
 		case STATE_CHARGEMENT_IDENTIFICATION:
-			//Gérer timeout
+			//TODO : Gérer timeout
 			if(myNewState)
 			{
-				mySrma.play(SRMA::MSG_ARRIVED);		
 				myNewState = false;
-				ArLog::log(ArLog::Verbose, "Entering STATE_CHARGEMENT_IDENTIFICATION\n");
-				sprintf(bufRequestIhm, "OpenForm IdentificationVC\n");
-				//TODO : si ca ne se passe pas bien
-				if(myIhm.sendRequest(bufRequestIhm) != 0){
-					setState(STATE_CHARGEMENT_IDENTIFICATION);
+				ArLog::log(ArLog::Verbose, "Entering STATE_CHARGEMENT_IDENTIFICATION\n");		
+				//On envoie la requete d'ouverture du Form
+				response = myIhm.sendRequest("OpenForm IdentificationVC\n",true);
+				//si pas la bonne réponse de la tablette
+				if(myIhm.testResponse(response, "OpenForm IdentificationVC\n") != myIhm.OK)
 					break;
-				}
-				myOperateur = &Person();
-				mySrma.play(SRMA::BUTTON_PRESSED);
-				
-				Identification::Identifier(myOperateur);
-				
 			}
-				sprintf(bufRequestIhm, "CloseForm IdentificationVC\n");
-				//TODO : si ca ne se passe pas bien
-				if(myIhm.sendRequest(bufRequestIhm) != 0){
-					setState(STATE_CHARGEMENT_IDENTIFICATION);
-					break;
-				}
+				
+			myOperateur = &Person();
+			mySrma.play(SRMA::BUTTON_PRESSED);
+			Identification::Identifier(myOperateur);
+			mySrma.play(SRMA::BUTTON_PRESSED);
+			//Si tablette ok, on ferme le form
+			if(myIhm.isIhmConnected() == true)
+			{
+				response = myIhm.sendRequest("CloseForm IdentificationVC\n",true);
+			}
+
 			if(myOperateur->getCardId() == "")
 			{
 				setState(STATE_CHARGEMENT_FIN);
@@ -215,8 +213,51 @@ void TraiterWorkorderRouting::handler()
 			}
 			setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
 			myWorkorderRouting.setResource(myOperateur);
-
 			break;
+
+		//case STATE_CHARGEMENT_FIN_IDENTIFICATION:
+		//	//Si pb d'affichage
+		//	if(myIhm.isIhmConnected() == true)
+		//	{
+		//		response = myIhm.sendRequest("CloseForm IdentificationVC\n",true);
+		//		if(response == "")
+		//		{
+		//			//Si ça se passe mal, c'est peut-être du à une connexion failed
+		//			//On tente une connexion
+		//			if(myIhm.connect() == false)
+		//			{
+		//				//TODO : pas d'IHM, avertir utilisateur, attendre carte??
+		//				setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
+		//				ArLog::log(ArLog::Verbose, "Connexion with IHM failed\n");
+		//				break;
+		//			}
+		//			//Connexion OK, on repasse dans cet état
+		//			setState(STATE_CHARGEMENT_FIN_IDENTIFICATION);
+		//			break;
+		//		}
+		//		//On a reçu une réponse non vide
+		//		//si c'est pas OK\r\nRequest\n
+		//		if(myIhm.testResponse(response, string("CloseForm IdentificationVC\n"))!=IhmCommunicationThread::OK)
+		//		{
+		//			//TODO : pas d'IHM, avertir utilisateur, attendre carte??
+		//			setState(STATE_CHARGEMENT);
+		//			ArLog::log(ArLog::Verbose, "Connexion with IHM failed\n");
+		//			break;
+		//		}
+		//	}
+	
+		//	if(myOperateur->getCardId() == "")
+		//	{
+		//		setState(STATE_CHARGEMENT_FIN);
+		//		break;
+		//	}
+		//	setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
+		//	myWorkorderRouting.setResource(myOperateur);
+		//		break;
+		//	}
+		//	
+		//	
+		//	break;
 
 
 		/*case STATE_CHARGEMENT_CANCEL:
@@ -241,7 +282,6 @@ void TraiterWorkorderRouting::handler()
 			myRunning = true;
 			//STate.......
 			break;
-
 */
 
 		case STATE_DEM_AFFICHAGE_CHARGEMENT:
@@ -252,10 +292,10 @@ void TraiterWorkorderRouting::handler()
 				//Envoi requete d'ouverture et attente retour OK
 				//Todo : create frame and send
 				sprintf(bufRequestIhm, "OpenForm ChargementVC %d %s 9\n",myWorkorderRouting.getWorkorder()->getOrderHeader().getOrderHeaderId(),myWorkorderRouting.getWorkorderRoutingNo());
-				if(myIhm.sendRequest(bufRequestIhm) == 0){
+				/*if(myIhm.sendRequest(bufRequestIhm) == 0){
 					setState(STATE_ATTENTE_CHARGEMENT_TERMINE);
 					break;
-				}
+				}*/
 				//TODO : faire qque chose si myIhm.sendRequest ne se passe pas bien
 				/*if((cptEchec--) <= 0)
 				{
@@ -334,10 +374,10 @@ void TraiterWorkorderRouting::handler()
 					ArLog::log(ArLog::Verbose, "Entering STATE_DEM_FERMETURE_CHARGEMENT\n");	
 					sprintf(bufRequestIhm,"CloseForm ChargementVC\n");
 					//Envoi requete d'ouverture et attente retour OK
-					if(myIhm.sendRequest(bufRequestIhm) == 0){
+					/*if(myIhm.sendRequest(bufRequestIhm) == 0){
 						setState(STATE_CHARGEMENT_FIN);
 						break;
-					}
+					}*/
 					setState(STATE_CHARGEMENT_FIN);
 					break;
 				}
@@ -445,10 +485,10 @@ void TraiterWorkorderRouting::handler()
 				myNewState = false;				
 				sprintf(bufRequestIhm,"OpenForm LivraisonVC %d %s\n",myWorkorderRouting.getWorkorder()->getOrderHeader().getOrderHeaderId(), myWorkorderRouting.getWorkorderRoutingNo());
 				//Envoi requete d'ouverture et attente retour OK
-				if(myIhm.sendRequest(bufRequestIhm) == 0){
+				/*if(myIhm.sendRequest(bufRequestIhm) == 0){
 					setState(STATE_ATTENTE_LIVRAISON_TERMINE);
 					break;
-				}
+				}*/
 				//TODO : On peut boucler à l'infini. Faire en sorte de pouvoir en sortir
 				//myResult=RES_OK;
 				setState(STATE_DEM_AFFICHAGE_LIVRAISON);
@@ -521,10 +561,10 @@ void TraiterWorkorderRouting::handler()
 					ArLog::log(ArLog::Verbose, "Entering STATE_DEM_FERMETURE_LIVRAISON\n");
 					myNewState = false;
 					sprintf(bufRequestIhm,"CloseForm LivraisonVC\n");
-					if(myIhm.sendRequest(bufRequestIhm) == 0){
+					/*if(myIhm.sendRequest(bufRequestIhm) == 0){
 						setState(STATE_LIVRAISON_FIN);
 						break;
-					}
+					}*/
 					//TODO : On peut boucler à l'infini. Faire en sorte de pouvoir en sortir
 					setState(STATE_DEM_FERMETURE_LIVRAISON);
 					break;

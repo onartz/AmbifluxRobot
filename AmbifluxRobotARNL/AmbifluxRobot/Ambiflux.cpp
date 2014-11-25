@@ -129,13 +129,23 @@ int main(int argc, char **argv)
   //Todo : A supprimer ?
   //ArGlobalFunctor1<Frame> functMessageReceived(&CallbackIhmReceived);
   //ihm.setCallback(&functMessageReceived);
+
   
-  while(!ihm.connect()==0)
+  
+  while(!ihm.connect() == true)
   {
   //if(ihm.connect()!=0)
 	soundQueue.play("c:\\temp\\ShortCircuit.wav");
 	ArUtil::sleep(2000);
   }
+  //std::string s = ihm.sendRequest("OpenForm Toto\n",true);
+  ////size_t size = s.find("O\r\n");
+  //if(s.find("OK\r\nOpenForm Toto\n") !=0 )
+		//ArLog::log(ArLog::Verbose, "BAD response\n");
+  //else
+	 // ArLog::log(ArLog::Verbose, "OK response\n");
+
+
 
   ihm.runAsync(); 
 

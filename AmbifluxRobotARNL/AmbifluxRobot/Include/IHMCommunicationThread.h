@@ -53,25 +53,39 @@ using namespace std;
 class IhmCommunicationThread : public ArASyncTask
 {
 public :
+	/*enum Error { 
+	NoErr, NetFail, ConBadHost, ConNoRoute, 
+	ConRefused, NameLookup };*/
+	//Satus of response
+	enum ResponseStatus{
+		Unknown, OK, FAILED, BadResponse
+	}; 
+
 	//Constructor
 	IhmCommunicationThread(int port, Pool<TCPReceivedRequest> *);
 	virtual ~IhmCommunicationThread();
 	virtual void * runThread(void *arg);
 	void lockMutex();
 	void unlockMutex();
-	int sendRequest(char*);
+	void sendRequest(char*);
+	void sendRequest(char* response, char* request);
+	std::string sendRequest(const char* request, bool b);
 	char* frameToChar(Frame);
-	void testCommunication();
+	//test response en fonction du protocole
+	ResponseStatus testResponse(std::string response, std::string request);
+
+	//void testCommunication();
 
 	//Connexion à l'Ipad
-	int connect();
+	bool connect();
 
 	//Setters
 	void setMsgReceivedCallback(ArGlobalFunctor1<Frame> *);
 
 	//Getters
-	bool isIhmConnected();
-	int getConnexionStatus();
+	ArSocket::Error getError(void);
+	bool isIhmConnected(void);
+	int getConnexionStatus(void);
 	
 private :
 	/* Liste des messages recus de la tablette */
@@ -81,6 +95,7 @@ private :
 	//Server for iPad as a client
 	ArNetServer myServer;
 	bool myRunning;
+	ArSocket::Error myError;
 
 protected :
 	// functor a declencher
