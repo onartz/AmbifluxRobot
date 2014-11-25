@@ -23,6 +23,7 @@ public:
 
 
 	 static void Identifier(Person*);
+	 static bool DetectCard(void);
 	 //static resource * Identifier();
 	
 	

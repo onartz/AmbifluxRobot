@@ -195,7 +195,6 @@ void TraiterWorkorderRouting::handler()
 				if(myIhm.testResponse(response, "OpenForm IdentificationVC\n") != myIhm.OK)
 					break;
 			}
-				
 			myOperateur = &Person();
 			mySrma.play(SRMA::BUTTON_PRESSED);
 			Identification::Identifier(myOperateur);
@@ -215,129 +214,50 @@ void TraiterWorkorderRouting::handler()
 			myWorkorderRouting.setResource(myOperateur);
 			break;
 
-		//case STATE_CHARGEMENT_FIN_IDENTIFICATION:
-		//	//Si pb d'affichage
-		//	if(myIhm.isIhmConnected() == true)
-		//	{
-		//		response = myIhm.sendRequest("CloseForm IdentificationVC\n",true);
-		//		if(response == "")
-		//		{
-		//			//Si ça se passe mal, c'est peut-être du à une connexion failed
-		//			//On tente une connexion
-		//			if(myIhm.connect() == false)
-		//			{
-		//				//TODO : pas d'IHM, avertir utilisateur, attendre carte??
-		//				setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
-		//				ArLog::log(ArLog::Verbose, "Connexion with IHM failed\n");
-		//				break;
-		//			}
-		//			//Connexion OK, on repasse dans cet état
-		//			setState(STATE_CHARGEMENT_FIN_IDENTIFICATION);
-		//			break;
-		//		}
-		//		//On a reçu une réponse non vide
-		//		//si c'est pas OK\r\nRequest\n
-		//		if(myIhm.testResponse(response, string("CloseForm IdentificationVC\n"))!=IhmCommunicationThread::OK)
-		//		{
-		//			//TODO : pas d'IHM, avertir utilisateur, attendre carte??
-		//			setState(STATE_CHARGEMENT);
-		//			ArLog::log(ArLog::Verbose, "Connexion with IHM failed\n");
-		//			break;
-		//		}
-		//	}
 	
-		//	if(myOperateur->getCardId() == "")
-		//	{
-		//		setState(STATE_CHARGEMENT_FIN);
-		//		break;
-		//	}
-		//	setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
-		//	myWorkorderRouting.setResource(myOperateur);
-		//		break;
-		//	}
-		//	
-		//	
-		//	break;
-
-
-		/*case STATE_CHARGEMENT_CANCEL:
-			printf("Entering STATE_CHARGEMENT_CANCEL\n");
-			//Si 3 echecs, on annule le WorkorderRouting
-
-			switch (myIdentificationSM.getResultat())
-			{
-				case IdentificationSM::RES_IDENTIFICATION_FAILED:
-					myWorkorderRouting.setErrorCodeId(WorkorderRouting::ERR_IDENTIFICATION_FAILED);
-					break;
-				case IdentificationSM::RES_TIMEOUT:
-					myWorkorderRouting.setErrorCodeId(WorkorderRouting::ERR_TIMEOUT_ARRIVEE_OPERATEUR);
-					break;
-			}
-			//myIdentificationSM();
-			myWorkorderRouting.setStateId(WorkorderRouting::FAILURE);
-			printf("WorkorderRouting %s annule\n",myWorkorderRouting.getWorkorderRoutingNo());
-			myWorkorderRouting.cancel();
-			DAL::updateWorkorderRouting(myWorkorderRouting);
-			//On sort de la boucle
-			myRunning = true;
-			//STate.......
-			break;
-*/
 
 		case STATE_DEM_AFFICHAGE_CHARGEMENT:
 			if(myNewState)
 			{
 				myNewState = false;
-				ArLog::log(ArLog::Verbose, "Entering STATE_DEM_AFFICHAGE_CHARGEMENT\n");	
-				//Envoi requete d'ouverture et attente retour OK
-				//Todo : create frame and send
-				sprintf(bufRequestIhm, "OpenForm ChargementVC %d %s 9\n",myWorkorderRouting.getWorkorder()->getOrderHeader().getOrderHeaderId(),myWorkorderRouting.getWorkorderRoutingNo());
-				/*if(myIhm.sendRequest(bufRequestIhm) == 0){
-					setState(STATE_ATTENTE_CHARGEMENT_TERMINE);
-					break;
-				}*/
-				//TODO : faire qque chose si myIhm.sendRequest ne se passe pas bien
-				/*if((cptEchec--) <= 0)
+				ArLog::log(ArLog::Verbose, "Entering STATE_DEM_AFFICHAGE_CHARGEMENT\n");
+				//Si tablette OK
+				if(myIhm.isIhmConnected() == true)
 				{
-					myResult=RES_ERROR;
-					setState(STATE_LIVRAISON_FIN);
-				}*/
-				setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
-				break;
-			}
-
-			//5sec pour que la tablette ait ouvert le form
-			/*if(myStateStartTime.mSecSince() > 5000 )
-			{
-				if((cptEchec--) <= 0)
-				{
-					myResult=RES_ERROR;
-					setState(STATE_CHARGEMENT_FIN);
+					sprintf(bufRequestIhm, "OpenForm ChargementVC %d %s 9\n",myWorkorderRouting.getWorkorder()->getOrderHeader().getOrderHeaderId(),myWorkorderRouting.getWorkorderRoutingNo());			
+					response = myIhm.sendRequest(bufRequestIhm,true);
+					//si pas la bonne réponse de la tablette
+					if(myIhm.testResponse(response, bufRequestIhm) != myIhm.OK)
+						break;	
 				}
-				else
-					setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
-			}*/
+			}
+			setState(STATE_ATTENTE_CHARGEMENT_TERMINE);
 			break;
 
-
-			case STATE_ATTENTE_CHARGEMENT_TERMINE:
-				if(myNewState)
-				{
-					ArLog::log(ArLog::Verbose, "Entering STATE_ATTENTE_CHARGEMENT_TERMINE\n");
-					myNewState = false;
-					break;
-				}
-				if(myStateStartTime.mSecSince() > TIMEOUT_DUREE_CHARGEMENT*1000)
-				{
-					myResult=RES_TIMEOUT;
-					//Faire qque chose
+		case STATE_ATTENTE_CHARGEMENT_TERMINE:
+			if(myNewState)
+			{
+				ArLog::log(ArLog::Verbose, "Entering STATE_ATTENTE_CHARGEMENT_TERMINE\n");
+				myNewState = false;
+				break;
+			}
+			//Cas du timeout
+			if(myStateStartTime.mSecSince() > TIMEOUT_DUREE_CHARGEMENT*1000)
+			{
+				myResult=RES_TIMEOUT;
+				//Faire qque chose
+				if(myIhm.isIhmConnected() == true)
 					setState(STATE_DEM_FERMETURE_CHARGEMENT);
-					break;
-				}
-				//en attente des messages
+				else
+					setState(STATE_CHARGEMENT_FIN);
+				break;
+			}
+			//Tablette connectee, on attend son message
+			//en attente des messages
 				//Info ChargementTermine WorkorderRoutingNo 0
 				//Info ChargementTermine WorkorderRoutingNo 1
-				
+			if(myIhm.isIhmConnected() == true)
+			{
 				if(myMessagePool->size()==0)
 					break;
 				
@@ -365,55 +285,34 @@ void TraiterWorkorderRouting::handler()
 				myResult=RES_OK;
 				mySrma.play(SRMA::BUTTON_PRESSED);
 				setState(STATE_CHARGEMENT_FIN);
-					break;
+				break;
+			}
+			
+			//La fin est signalée par le badge de l'utilisateur
+			if(Identification::DetectCard() == true)
+			{
+				//myWorkorderRouting.setStateId((WorkorderRouting::WORKORDERROUTING_STATE)atoi(req.frame.msg[3].c_str()));
+				myResult=RES_OK;
+				mySrma.play(SRMA::BUTTON_PRESSED);
+				setState(STATE_CHARGEMENT_FIN);
+				break;
+			}
+			break;
 
+			//Demande de fermeture du form Chargement (en cas de timeout par ex)
 			case STATE_DEM_FERMETURE_CHARGEMENT:
 				if(myNewState)
 				{
 					myNewState = false;
-					ArLog::log(ArLog::Verbose, "Entering STATE_DEM_FERMETURE_CHARGEMENT\n");	
-					sprintf(bufRequestIhm,"CloseForm ChargementVC\n");
-					//Envoi requete d'ouverture et attente retour OK
-					/*if(myIhm.sendRequest(bufRequestIhm) == 0){
-						setState(STATE_CHARGEMENT_FIN);
-						break;
-					}*/
+					ArLog::log(ArLog::Verbose, "Entering STATE_DEM_FERMETURE_CHARGEMENT\n");
+					if(myIhm.isIhmConnected())
+						response = myIhm.sendRequest("CloseForm ChargementVC\n",true);
 					setState(STATE_CHARGEMENT_FIN);
 					break;
 				}
 
-			//5sec pour que la tablette ait ouvert le form
-			/*if(myStateStartTime.mSecSince() > 5000 )
-			{
-				if((cptEchec--) <= 0)
-				{
-					myResult=RES_ERROR;
-					setState(STATE_CHARGEMENT_FIN);
-				}
-				else
-					setState(STATE_DEM_FERMETURE_CHARGEMENT);
-			}*/
 			break;
 
-
-			//case STATE_ATTENTE_FERMETURE_CHARGEMENT:
-			//	printf("Entering STATE_ATTENTE_FERMETURE_CHARGEMENT\n");
-			//	if(tabletteSM->IsChargementVCOpened() && myStateStartTime.mSecSince() > 5000)
-			//	{
-			//		break;
-			//	}
-			//	// Le formulaire s'est bien refermé
-			//	else if(!tabletteSM->IsChargementVCOpened())
-			//	{
-			//		setState(STATE_CHARGEMENT_OK);
-			//	}
-			//	//Timeout fermeture formulaire
-			//	else {
-			//		setState(STATE_CHARGEMENT_INTERNAL_ERROR);
-			//	}
-			//	
-
-			//	break;
 
 			case STATE_CHARGEMENT_FIN:
 				ArLog::log(ArLog::Verbose, "Entering STATE_CHARGEMENT_FIN\n");
@@ -421,12 +320,8 @@ void TraiterWorkorderRouting::handler()
 				{
 					case RES_OK:
 						mySrma.setLoad(SRMA::LOADED);
-						myWorkorderRouting.close();
-					
+						myWorkorderRouting.close();				
 						ArLog::log(ArLog::Verbose, "WorkorderRouting %s cloture\n",myWorkorderRouting.getWorkorderRoutingNo());
-						//Mise à jour du myWorkorderRouting
-						//Todo : DALRest
-						
 						DALRest::updateWorkorderRouting(&myWorkorderRouting);
 						//On arrete la boucle
 						myRunning = false;
@@ -471,8 +366,6 @@ void TraiterWorkorderRouting::handler()
 				ArLog::log(ArLog::Verbose, "Entering STATE_LIVRAISON_START\n");		
 				myWorkorderRouting.start();
 				ArLog::log(ArLog::Verbose, "WorkorderRouting %s demarre\n",myWorkorderRouting.getWorkorderRoutingNo());
-				//Todo : DalRest
-				//DAL::updateWorkorderRouting(myWorkorderRouting);
 				DALRest::updateWorkorderRouting(&myWorkorderRouting);
 				setState(STATE_DEM_AFFICHAGE_LIVRAISON);			
 			break;
@@ -483,29 +376,17 @@ void TraiterWorkorderRouting::handler()
 				mySrma.play(SRMA::MSG_ARRIVED);
 				ArLog::log(ArLog::Verbose, "Entering STATE_DEM_AFFICHAGE_LIVRAISON\n");
 				myNewState = false;				
-				sprintf(bufRequestIhm,"OpenForm LivraisonVC %d %s\n",myWorkorderRouting.getWorkorder()->getOrderHeader().getOrderHeaderId(), myWorkorderRouting.getWorkorderRoutingNo());
-				//Envoi requete d'ouverture et attente retour OK
-				/*if(myIhm.sendRequest(bufRequestIhm) == 0){
-					setState(STATE_ATTENTE_LIVRAISON_TERMINE);
-					break;
-				}*/
-				//TODO : On peut boucler à l'infini. Faire en sorte de pouvoir en sortir
-				//myResult=RES_OK;
-				setState(STATE_DEM_AFFICHAGE_LIVRAISON);
-				break;
-			}
-
-			//5sec pour que la tablette ait ouvert le form
-			if(myStateStartTime.mSecSince() > 5000 )
-			{
-				if((cptEchec--) <= 0)
+				sprintf(bufRequestIhm,"OpenForm LivraisonVC %d %s\n",myWorkorderRouting.getWorkorder()->getOrderHeader().getOrderHeaderId(), myWorkorderRouting.getWorkorderRoutingNo());		
+				response = myIhm.sendRequest(bufRequestIhm,true);
+				//si pas la bonne réponse de la tablette
+				//TODO : renvoyer 3 fois??
+				if(myIhm.testResponse(response, bufRequestIhm) != myIhm.OK)
 				{
-					myResult=RES_ERROR;
-					setState(STATE_LIVRAISON_FIN);
+					response = myIhm.sendRequest(bufRequestIhm,true);
+					break;	
 				}
-				else
-					setState(STATE_DEM_AFFICHAGE_LIVRAISON);
 			}
+			setState(STATE_DEM_AFFICHAGE_LIVRAISON);
 			break;
 
 			case STATE_ATTENTE_LIVRAISON_TERMINE:
@@ -522,6 +403,9 @@ void TraiterWorkorderRouting::handler()
 					setState(STATE_DEM_FERMETURE_LIVRAISON);
 					break;
 				}
+
+				if(myIhm.isIhmConnected())
+				{
 				
 				//en attente des messages
 				//LivraisonTerminee WorkorderRoutingNo Complete
@@ -552,7 +436,17 @@ void TraiterWorkorderRouting::handler()
 				myResult=RES_OK;
 				setState(STATE_LIVRAISON_FIN);
 					break;
-		
+				}
+
+				//La fin est signalée par le badge de l'utilisateur
+			if(Identification::DetectCard() == true)
+			{
+				//myWorkorderRouting.setStateId((WorkorderRouting::WORKORDERROUTING_STATE)atoi(req.frame.msg[3].c_str()));
+				myResult=RES_OK;
+				mySrma.play(SRMA::BUTTON_PRESSED);
+				setState(STATE_LIVRAISON_FIN);
+				break;
+			}
 
 
 			case STATE_DEM_FERMETURE_LIVRAISON:
@@ -873,6 +767,75 @@ bool TraiterWorkorderRouting::mySrma.isStateArrivedAt(char * nextLocationName)
 	return(resAttendu.compare(s)==0);
 }*/
 
+
+	//case STATE_CHARGEMENT_FIN_IDENTIFICATION:
+		//	//Si pb d'affichage
+		//	if(myIhm.isIhmConnected() == true)
+		//	{
+		//		response = myIhm.sendRequest("CloseForm IdentificationVC\n",true);
+		//		if(response == "")
+		//		{
+		//			//Si ça se passe mal, c'est peut-être du à une connexion failed
+		//			//On tente une connexion
+		//			if(myIhm.connect() == false)
+		//			{
+		//				//TODO : pas d'IHM, avertir utilisateur, attendre carte??
+		//				setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
+		//				ArLog::log(ArLog::Verbose, "Connexion with IHM failed\n");
+		//				break;
+		//			}
+		//			//Connexion OK, on repasse dans cet état
+		//			setState(STATE_CHARGEMENT_FIN_IDENTIFICATION);
+		//			break;
+		//		}
+		//		//On a reçu une réponse non vide
+		//		//si c'est pas OK\r\nRequest\n
+		//		if(myIhm.testResponse(response, string("CloseForm IdentificationVC\n"))!=IhmCommunicationThread::OK)
+		//		{
+		//			//TODO : pas d'IHM, avertir utilisateur, attendre carte??
+		//			setState(STATE_CHARGEMENT);
+		//			ArLog::log(ArLog::Verbose, "Connexion with IHM failed\n");
+		//			break;
+		//		}
+		//	}
+	
+		//	if(myOperateur->getCardId() == "")
+		//	{
+		//		setState(STATE_CHARGEMENT_FIN);
+		//		break;
+		//	}
+		//	setState(STATE_DEM_AFFICHAGE_CHARGEMENT);
+		//	myWorkorderRouting.setResource(myOperateur);
+		//		break;
+		//	}
+		//	
+		//	
+		//	break;
+
+
+		/*case STATE_CHARGEMENT_CANCEL:
+			printf("Entering STATE_CHARGEMENT_CANCEL\n");
+			//Si 3 echecs, on annule le WorkorderRouting
+
+			switch (myIdentificationSM.getResultat())
+			{
+				case IdentificationSM::RES_IDENTIFICATION_FAILED:
+					myWorkorderRouting.setErrorCodeId(WorkorderRouting::ERR_IDENTIFICATION_FAILED);
+					break;
+				case IdentificationSM::RES_TIMEOUT:
+					myWorkorderRouting.setErrorCodeId(WorkorderRouting::ERR_TIMEOUT_ARRIVEE_OPERATEUR);
+					break;
+			}
+			//myIdentificationSM();
+			myWorkorderRouting.setStateId(WorkorderRouting::FAILURE);
+			printf("WorkorderRouting %s annule\n",myWorkorderRouting.getWorkorderRoutingNo());
+			myWorkorderRouting.cancel();
+			DAL::updateWorkorderRouting(myWorkorderRouting);
+			//On sort de la boucle
+			myRunning = true;
+			//STate.......
+			break;
+*/
 
 
 

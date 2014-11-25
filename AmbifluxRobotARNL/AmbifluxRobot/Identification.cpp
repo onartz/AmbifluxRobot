@@ -7,21 +7,12 @@
 void Identification::Identifier(Person *person)
 {
 	LecteurCarte lecteurCarte;
-
 	ArTime myStateStartTime;
-	//Resultat res;
-
-	//int retCode;
-	
 	lecteurCarte.open();
-
 	//On tente une fois
 	int r = LecteurCarte::NOCARD;
-
 	r = lecteurCarte.read(20000);
-	
 	lecteurCarte.close();
-
 	if(r != LecteurCarte::CARD)
 		return;
 
@@ -32,6 +23,18 @@ void Identification::Identifier(Person *person)
 	//Person * operateur = new Person(json);
 	*person = Person(json);
 	return ;
+}
+
+bool Identification:: DetectCard(void)
+{
+	LecteurCarte lecteurCarte;
+	ArTime myStateStartTime;
+	lecteurCarte.open();
+	//On tente une fois
+	int r = LecteurCarte::NOCARD;
+	r = lecteurCarte.read(20000);
+	lecteurCarte.close();
+	return(r == LecteurCarte::CARD);
 }
 
 
