@@ -93,6 +93,9 @@ void SRMA::SendCommand(CommandeRobot command)
 	case CommandeRobot::STOP:
 		myClient.requestOnce("stop",&packet);
 		break;
+	case CommandeRobot::DOCK:
+		myClient.requestOnce("dock",&packet);
+		break;
 
 	case CommandeRobot::AUTODOCK:
 		if(command.VArgs[0].compare("ENABLE")==0)
@@ -120,6 +123,9 @@ void SRMA::gotoGoal(const char * goal)
 	sprintf(msgArrivedAt,"Arrived at %s\0",goal);
 	sprintf(msgFailedToGetTo,"Failed to get to %s\0",goal);
 	strcpy_s(tmpStatus, myOutputHandler.getStatus());
+
+	//this->play(SRMA::BUTTON_PRESSED);
+	SendCommand(CommandeRobot(CommandeRobot::AUTODOCK,"DISABLE"));
 
 	SendCommand(CommandeRobot::CommandeRobot(CommandeRobot::GOTOGOAL, goal));
 
@@ -199,9 +205,6 @@ void SRMA::gotoGoal(const char * goal)
 	return;
 }
 
-
-
-
 void SRMA::play(char* fileName)
 {
 	try{
@@ -228,6 +231,9 @@ void SRMA::play(SOUNDS sound)
 			case BLIP:
 				play(FILE_BLIP);
 				break;
+			case BELL:
+				play(FILE_BELL);
+				break;
 			default:
 				break;
 		}
@@ -237,4 +243,3 @@ void SRMA::play(SOUNDS sound)
 		ArLog::log(ArLog::Verbose, ex.what());
 	}
 }
-

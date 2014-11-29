@@ -122,34 +122,23 @@ int main(int argc, char **argv)
    Server start on port 7171 to receive requests from ipad
    A client is created on port 7474 to request iPad
    */
-  //IhmCommunicationThread ihm(7171, &messagePool);
 
-  IhmCommunicationThread ihm(7171, &tcpReceivedPool);
+	IhmCommunicationThread ihm(7171, &tcpReceivedPool);
    //On s'abonne à la réception de message par la classe IhmCommunicationThread
   //Todo : A supprimer ?
   //ArGlobalFunctor1<Frame> functMessageReceived(&CallbackIhmReceived);
-  //ihm.setCallback(&functMessageReceived);
-
+  //ihm.setCallback(&functMessageReceived); 
   
-  
-  while(!ihm.connect() == true)
+ /* while(!ihm.connect() == true)
   {
   //if(ihm.connect()!=0)
 	soundQueue.play("c:\\temp\\ShortCircuit.wav");
 	ArUtil::sleep(2000);
-  }
-  //std::string s = ihm.sendRequest("OpenForm Toto\n",true);
-  ////size_t size = s.find("O\r\n");
-  //if(s.find("OK\r\nOpenForm Toto\n") !=0 )
-		//ArLog::log(ArLog::Verbose, "BAD response\n");
-  //else
-	 // ArLog::log(ArLog::Verbose, "OK response\n");
-
+  }*/
 
 
   ihm.runAsync(); 
 
-  //while(true);
 
   /* Create our client object. This is the object which connects with a remote
    * server over the network, and which manages all of our communication with it
@@ -161,7 +150,7 @@ int main(int argc, char **argv)
    * examples of making requests and reading/writing the data in packets.
    */
   ArClientBase client;
-
+ 
   /* Aria components use this to get options off the command line: */
   ArArgumentParser parser(&argc, argv);
 
@@ -193,6 +182,7 @@ int main(int argc, char **argv)
   printf("Connected to server.\n");
 
   client.setRobotName(client.getHost()); // include server name in log messages
+ client.logDataList();
 
 
   ///* Create a key handler and also tell Aria about it */
@@ -249,18 +239,18 @@ if(!client.dataExists("gotoGoal") )
 	SRMA srma(strSRMA,client, outputHandler, ihm, &soundQueue);
 
 	//Loop du mode Ambiant
-	MainLoop myLoop(srma, &tcpReceivedPool);
-	myLoop.runAsync();
+	//MainLoop myLoop(srma, &tcpReceivedPool);
+	//myLoop.runAsync();
 	
 	//Thread loop : TCP commands
 	//Produces messages in tcpMessagePool
-	//ServerLoop myServerLoop(srma, &tcpReceivedPool);
-	//myServerLoop.runAsync();
+	ServerLoop myServerLoop(srma, &tcpReceivedPool);
+	myServerLoop.runAsync();
  
 	//Traitement des requetes TCP
 	//Consulmes messages in tcpMessagePool
-	//TCPRequestsLoop myTCPRequestsLoop(srma, &tcpReceivedPool);
-	//myTCPRequestsLoop.runAsync();
+	TCPRequestsLoop myTCPRequestsLoop(srma, &tcpReceivedPool);
+	myTCPRequestsLoop.runAsync();
 
  
 

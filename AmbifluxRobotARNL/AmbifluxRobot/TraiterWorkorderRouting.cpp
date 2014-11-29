@@ -60,7 +60,7 @@ void TraiterWorkorderRouting::handler()
 			//Robot not at position
 			//nextLocationName = myWorkorderRouting.getLocation().getLocationName();
 				//ArLog::log(ArLog::Verbose, "Entering STATE_TRANSPORT_DEMANDE_DEPLACEMENT");				
-			mySrma.SendCommand(CommandeRobot(CommandeRobot::GOTOGOAL,nextLocationName ));
+			//mySrma.SendCommand(CommandeRobot(CommandeRobot::GOTOGOAL,nextLocationName ));
 			setState(STATE_TRANSPORT_PREPARATION);
 			break;
 

@@ -23,6 +23,7 @@
 #define FILE_BUTTON_PRESSED "c:\\temp\\buttonPressed.wav"
 #define FILE_MSG_ARRIVED "c:\\temp\\Electrical_Sweep.wav"
 #define FILE_BLIP "c:\\temp\\blip.wav"
+#define FILE_BELL "c:\\temp\\indianbell.wav"
 
 //SRMA hérite de Resource
 class SRMA : public Resource
@@ -39,7 +40,8 @@ public:
 	{
 		MSG_ARRIVED,
 		BUTTON_PRESSED,
-		BLIP
+		BLIP,
+		BELL
 	};
 
 	//Avec JSON

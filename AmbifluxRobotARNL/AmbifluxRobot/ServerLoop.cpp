@@ -2,6 +2,7 @@
 
 void ServerLoop::handleRequestReceived(char ** msg, int nbArgs, ArSocket *sock)
 {
+	//ThreadSafe
 	myMessagePool->push(TCPReceivedRequest(sock, Frame(msg, nbArgs)));
 }
 

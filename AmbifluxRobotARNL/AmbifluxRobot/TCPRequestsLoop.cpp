@@ -9,7 +9,7 @@ mySrma(srma), currentSock(0)
 	//initialize map
 	s_mapStringValues["GotoGoal"] = Cmd0;
 	s_mapStringValues["Talk"] = Cmd1;
-	s_mapStringValues["XXX"] = Cmd2;
+	s_mapStringValues["Dock"] = Cmd2;
 
 	myRunning = true;
 }
@@ -30,7 +30,12 @@ void *TCPRequestsLoop::runThread(void *arg)
 
 void TCPRequestsLoop::treatRequest(TCPReceivedRequest f)
 {
+	
 	ArFunctor1C<TCPRequestsLoop, char*> funct(this, &TCPRequestsLoop::handleEndGotoGoal);
+	
+	/*this->lock();
+	ArLog::log(ArLog::Normal,"Recu : %s", f.frame.msg[1]);
+	this->unlock();*/
 	//Pour suivre l'avancement
 	mySrma.setCallbackEndGotoGoal(&funct);
 	currentSock = f.socket;
@@ -39,6 +44,7 @@ void TCPRequestsLoop::treatRequest(TCPReceivedRequest f)
 	{
 		//Gotogoal command
 		case Cmd0:
+			ArLog::log(ArLog::Normal,"GotoGoal");
 			//mySrma.SendCommand(CommandeRobot::CommandeRobot(CommandeRobot::GOTOGOAL, f.frame.msg[2]));	
 			treatGotoGoal(f);
 			//while(!mySrma.isStateArrivedAt(f.frame.msg[2].c_str()) || 
@@ -46,7 +52,11 @@ void TCPRequestsLoop::treatRequest(TCPReceivedRequest f)
 			break;
 		case Cmd1:
 			break;
+		//Recu : Request Dock
 		case Cmd2:
+			//ArLog::log(ArLog::Normal,"Dock");
+			mySrma.SendCommand(CommandeRobot(CommandeRobot::AUTODOCK,"ENABLE"));
+			mySrma.SendCommand(CommandeRobot(CommandeRobot::DOCK));
 			break;
 		default:
 			break;
@@ -54,19 +64,31 @@ void TCPRequestsLoop::treatRequest(TCPReceivedRequest f)
 	return;
 }
 
+//Recu : Request GotoGoal xxx
 void TCPRequestsLoop::treatGotoGoal(TCPReceivedRequest req)
 {
+	mySrma.SendCommand(CommandeRobot(CommandeRobot::AUTODOCK,"DISABLE"));
+	myMutex.lock();
 	mySrma.gotoGoal(req.frame.msg[2].c_str());
 	//req.socket->writeString("c parti");
+	myMutex.unlock();
 
 }
 
+void TCPRequestsLoop::lockMutex(){myMutex.lock();};
+void TCPRequestsLoop::unlockMutex(){myMutex.unlock();};
+
 void TCPRequestsLoop::handleEndGotoGoal(char* msg)
 {
+	
 	//SRMA::GOTOGOAL_STATUS
 	try
 	{
+		myMutex.lock();
+		//currentSock->writeString(msg);
 		currentSock->writeString(msg);
+		myMutex.unlock();
+		mySrma.play(SRMA::BELL);
 	}
 	catch(std::exception const&  ex)
 	{

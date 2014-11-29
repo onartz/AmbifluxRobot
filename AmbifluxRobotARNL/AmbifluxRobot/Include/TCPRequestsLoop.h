@@ -8,6 +8,7 @@ Request pattern : Request xxx xxx xx
 #include "ArAsyncTask.h"
 #include "AriaUtil.h"
 #include "SRMA.h"
+#include "ArMutex.h"
 //#include "Frame.h"
 #include "TCPReceivedRequest.h"
 #include <map>
@@ -24,6 +25,8 @@ public:
 	//Traitement réception mesg from srma
 	void handleEndGotoGoal(char*);
 	//~MainLoop();
+	void lockMutex();
+	void unlockMutex();
 
 protected:
 	//Possible values for Param1
@@ -31,6 +34,8 @@ protected:
 	Cmd1,
 	Cmd2
 	};
+
+	ArMutex myMutex;
 
 	std::map<std::string, Param1Value> s_mapStringValues;
 
