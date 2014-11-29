@@ -117,6 +117,8 @@ void SRMA::gotoGoal(const char * goal)
 	char msgFailedToGetTo[256];
 	char msgGoingTo[256];
 	char tmpStatus[256];
+	strcpy_s(tmpStatus, myOutputHandler.getStatus());
+
 
 	//Initialisation des messages attendus du robot
 	sprintf(msgGoingTo,"Going to %s\0",goal);

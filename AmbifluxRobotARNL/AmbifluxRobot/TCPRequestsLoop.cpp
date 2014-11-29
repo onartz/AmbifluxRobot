@@ -29,10 +29,8 @@ void *TCPRequestsLoop::runThread(void *arg)
 	}
 
 void TCPRequestsLoop::treatRequest(TCPReceivedRequest f)
-{
-	
-	ArFunctor1C<TCPRequestsLoop, char*> funct(this, &TCPRequestsLoop::handleEndGotoGoal);
-	
+{	
+	ArFunctor1C<TCPRequestsLoop, char*> funct(this, &TCPRequestsLoop::handleEndGotoGoal);	
 	/*this->lock();
 	ArLog::log(ArLog::Normal,"Recu : %s", f.frame.msg[1]);
 	this->unlock();*/
@@ -44,7 +42,7 @@ void TCPRequestsLoop::treatRequest(TCPReceivedRequest f)
 	{
 		//Gotogoal command
 		case Cmd0:
-			ArLog::log(ArLog::Normal,"GotoGoal");
+			//ArLog::log(ArLog::Normal,"GotoGoal");
 			//mySrma.SendCommand(CommandeRobot::CommandeRobot(CommandeRobot::GOTOGOAL, f.frame.msg[2]));	
 			treatGotoGoal(f);
 			//while(!mySrma.isStateArrivedAt(f.frame.msg[2].c_str()) || 
@@ -88,12 +86,16 @@ void TCPRequestsLoop::handleEndGotoGoal(char* msg)
 		//currentSock->writeString(msg);
 		currentSock->writeString(msg);
 		myMutex.unlock();
-		mySrma.play(SRMA::BELL);
-	}
+		if(strstr(msg,"Arrived")!=0 || strstr(msg,"Failed")!=0 )
+			mySrma.play(SRMA::BELL);
+	}		
+	
 	catch(std::exception const&  ex)
 	{
 		printf("Socket exception. %s", ex.what());
 	}
+
+	
 	//printf("recu %d\n", p);
 
 }
