@@ -126,7 +126,6 @@ void SRMA::gotoGoal(const char * goal)
 	sprintf(msgFailedToGetTo,"Failed to get to %s\0",goal);
 	strcpy_s(tmpStatus, myOutputHandler.getStatus());
 
-	//this->play(SRMA::BUTTON_PRESSED);
 	SendCommand(CommandeRobot(CommandeRobot::AUTODOCK,"DISABLE"));
 
 	SendCommand(CommandeRobot::CommandeRobot(CommandeRobot::GOTOGOAL, goal));
