@@ -127,8 +127,8 @@ int main(int argc, char **argv)
   Tread-safe (mutex)*/
   Pool<TCPReceivedRequest> tcpReceivedPool;
 
-  /*if(g_Tablette == true)
-  {*/
+  if(g_Tablette == true)
+  {
 	  /*Create our thread to communicate with iPad
 	   Server start on port 7171 to receive requests from ipad
 	   A client is created on port 7474 to request iPad
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 		ArUtil::sleep(2000);
 	  }*/
 	  ihm.runAsync();
-  //}
+  }
 
   /* This will be used to connect our client to the server, including
    * various bits of handshaking (e.g. sending a password, retrieving a list
@@ -232,8 +232,16 @@ if(!client.dataExists("gotoGoal") )
 	string strSRMA = DALRest::getResourceById("9");
 	SRMA srma(strSRMA,client, outputHandler, ihm, &soundQueue);
 
-	MainLoop myLoop(srma, &tcpReceivedPool);
+	MainLoop myLoop(srma);
+
+	if(g_Tablette == true)
+	{
+		myLoop.setTCPReceivedPool(&tcpReceivedPool);
+	}
 	myLoop.runAsync();
+
+	//MainLoop myLoop(srma, &tcpReceivedPool);
+	//myLoop.runAsync();
 
 	//Loop du mode Ambiant
 	/*if(g_Tablette == true)

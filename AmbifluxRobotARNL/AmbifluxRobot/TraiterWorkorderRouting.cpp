@@ -179,8 +179,52 @@ void TraiterWorkorderRouting::handler()
 			//ArLog::log(ArLog::Verbose, "WorkorderRouting %s demarre\n",myWorkorderRouting.getWorkorderRoutingNo());
 			myWorkorderRouting.start();
 			DALRest::updateWorkorderRouting(&myWorkorderRouting);
-			setState(STATE_CHARGEMENT_IDENTIFICATION);	
+			if(g_Tablette == true)
+				setState(STATE_CHARGEMENT_IDENTIFICATION);	
+			else
+				setState(STATE_CHARGEMENT_NOIHM_IDENTIFICATION);
+
 			mySrma.play(SRMA::MSG_ARRIVED);	
+			break;
+
+		//L'operateur doit déclencher le début de l'op"ration en badgeant
+		case STATE_CHARGEMENT_NOIHM_IDENTIFICATION:
+			myOperateur = &Person();
+			Identification::Identifier(myOperateur);
+			mySrma.play(SRMA::BUTTON_PRESSED);
+			//TODO : indiquer le cahrgement a realiser par voix
+			if(myOperateur->getCardId() == "")
+			{
+				//Personne, pas de personnel identifie, on estime que le travail est fait
+				//TODO : modifier
+				myResult=RES_OK;
+				setState(STATE_ATTENTE_FIN_CHARGEMENT_NOIHM);
+				break;
+			}
+			setState(STATE_ATTENTE_FIN_CHARGEMENT_NOIHM);
+			myWorkorderRouting.setResource(myOperateur);
+			break;
+			
+		case STATE_ATTENTE_FIN_CHARGEMENT_NOIHM:
+			if(myNewState)
+			{
+				ArLog::log(ArLog::Verbose, "Entering STATE_ATTENTE_FIN_CHARGEMENT_NOIHM\n");
+				myNewState = false;
+				break;
+			}
+			//La fin est signalée par le badge de l'utilisateur
+			if(Identification::DetectCard() == true)
+			{
+				//myWorkorderRouting.setStateId((WorkorderRouting::WORKORDERROUTING_STATE)atoi(req.frame.msg[3].c_str()));
+				myResult=RES_OK;
+				mySrma.play(SRMA::BUTTON_PRESSED);
+				//TODO : say goodbye
+				setState(STATE_CHARGEMENT_FIN);
+				break;
+			}
+			myResult = RES_FAILED;
+			//TODO : say goodbye
+			setState(STATE_CHARGEMENT_FIN);
 			break;
 
 		case STATE_CHARGEMENT_IDENTIFICATION:
@@ -189,16 +233,15 @@ void TraiterWorkorderRouting::handler()
 			{
 				myNewState = false;
 				ArLog::log(ArLog::Verbose, "Entering STATE_CHARGEMENT_IDENTIFICATION\n");		
-				//if(g_Tablette == true){
-					//On envoie la requete d'ouverture du Form
-					response = myIhm.sendRequest("OpenForm IdentificationVC\n",true);
-					//si pas la bonne réponse de la tablette
-					if(myIhm.testResponse(response, "OpenForm IdentificationVC\n") != myIhm.OK)
-					break;
-				//}
+				//On envoie la requete d'ouverture du Form
+				response = myIhm.sendRequest("OpenForm IdentificationVC\n",true);
+				//si pas la bonne réponse de la tablette
+				if(myIhm.testResponse(response, "OpenForm IdentificationVC\n") != myIhm.OK)
+				break;
+				
 			}
 			myOperateur = &Person();
-			mySrma.play(SRMA::BUTTON_PRESSED);
+			//mySrma.play(SRMA::BUTTON_PRESSED);
 			Identification::Identifier(myOperateur);
 			mySrma.play(SRMA::BUTTON_PRESSED);
 			//Si tablette ok, on ferme le form

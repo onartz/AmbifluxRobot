@@ -29,6 +29,7 @@ using namespace std;
 std::list<Workorder> workorderList;
 
 MainLoop::MainLoop(SRMA &srma):mySrma(srma){
+	myMessagePool = 0;
 	myRunning = true;
 }
 
@@ -36,6 +37,10 @@ MainLoop::MainLoop(SRMA &srma, Pool<TCPReceivedRequest> *messagePool):myMessageP
 mySrma(srma)
 {
 	myRunning = true;
+}
+
+void MainLoop::setTCPReceivedPool(Pool<TCPReceivedRequest>* messagePool){
+	myMessagePool = messagePool;
 }
 //Thread du serveurc
 void *MainLoop::runThread(void *arg)
