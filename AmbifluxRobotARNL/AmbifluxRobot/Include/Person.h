@@ -16,6 +16,8 @@ public:
 	Person(string);
 	//Méthodes publiques
 	string getCardId();
+	string getFirstName();
+	string getLastName();
 
 protected:
 	string myFirstName;

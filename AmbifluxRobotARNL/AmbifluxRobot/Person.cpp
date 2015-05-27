@@ -33,6 +33,8 @@ Person::Person(string str)
 }
 
 string Person::getCardId(){return myCardId;}
+string Person::getFirstName(){return myFirstName;}
+string Person::getLastName(){return myLastName;}
 
 
 

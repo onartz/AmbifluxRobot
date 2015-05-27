@@ -15,6 +15,7 @@ OrderHeader::OrderHeader(ptree pt)
 {
 	try{
 		strcpy_s(myOrderHeaderNo, (char*)(pt.get<string>("OrderNo").c_str()));
+		strcpy_s(myObjetDemandeExpress, (char*)(pt.get<string>("ObjetDemandeExpress").c_str()));
 		myOrderHeaderId = pt.get<int>("OrderId");
 		//strcpy_s(myType, (char*)(pt.get<string>("type").c_str()));
 	}

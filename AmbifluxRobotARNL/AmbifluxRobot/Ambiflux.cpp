@@ -13,6 +13,7 @@ A chaque réception d'un nouveau message, la listOfIncomingMessage est mise à jou
 #include "ArSoundPlayer.h"
 #include "Globals.h"
 #include "Srma.h"
+//#include "ArCepstral.h"
 
 IhmCommunicationThread ihm;
 
@@ -80,11 +81,21 @@ const char* getGyroStatusString(ArRobot* robot)
 Executer Ambiflux -GUI si tablette
 */
 int main(int argc, char **argv)
+
 {
+//ArCepstral cepstral;
+  if( ! g_Cepstral.init() )
+  {
+    printf("Error initializing Cepstral!\n");
+    return -1;
+  }
+  //g_Cepstral.setVoice("Diane");
+  //g_Cepstral.speak("Cepstral is now initialized; proceding with the test.");
   // Initialize Aria and Arnl global information
  
  /* Aria initialization: */
   Aria::init();
+  //ArLog::init(ArLog::StdErr, ArLog::Verbose);
   ArLog::init(ArLog::File, ArLog::Verbose,"c:\\temp\\AmbifluxRobot.log",true);
   ArLog::log(ArLog::Verbose, "Ambiflux Starting");
 

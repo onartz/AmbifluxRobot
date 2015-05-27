@@ -189,9 +189,10 @@ void TraiterWorkorderRouting::handler()
 
 		//L'operateur doit déclencher le début de l'op"ration en badgeant
 		case STATE_CHARGEMENT_NOIHM_IDENTIFICATION:
+			//g_Cepstral.speak("Is there anybody here? Present your card to start.");
 			myOperateur = &Person();
 			Identification::Identifier(myOperateur);
-			mySrma.play(SRMA::BUTTON_PRESSED);
+			//mySrma.play(SRMA::BUTTON_PRESSED);
 			//TODO : indiquer le cahrgement a realiser par voix
 			if(myOperateur->getCardId() == "")
 			{
@@ -201,6 +202,12 @@ void TraiterWorkorderRouting::handler()
 				setState(STATE_ATTENTE_FIN_CHARGEMENT_NOIHM);
 				break;
 			}
+			//g_Cepstral.speakf("Hello %s, can you give me %s?",myOperateur->getFirstName().c_str());
+			g_Cepstral.speakf("Hello %s, I need %s",myOperateur->getFirstName().c_str(),myWorkorderRouting.getWorkorder()->getOrderHeader().getObjetDemandeExpress());
+		//g_Cepstral.speakf("Hello %s, I need you.",myOperateur->getFirstName().c_str());
+		
+			//g_Cepstral.spp
+			//g_Cepstral.sp
 			setState(STATE_ATTENTE_FIN_CHARGEMENT_NOIHM);
 			myWorkorderRouting.setResource(myOperateur);
 			break;

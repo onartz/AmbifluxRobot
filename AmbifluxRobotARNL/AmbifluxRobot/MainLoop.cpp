@@ -3,6 +3,16 @@ Ambiant mode with database requests to treat Workorders
 */
 #include "MainLoop.h"
 
+void print(boost::property_tree::ptree const& pt)
+{
+    using boost::property_tree::ptree;
+    ptree::const_iterator end = pt.end();
+    for (ptree::const_iterator it = pt.begin(); it != end; ++it) {
+        std::cout << it->first << ": " << it->second.get_value<std::string>() << std::endl;
+        print(it->second);
+    }
+}
+
 //Get workorders from DB
 			/*
 			{"GetWorkordersResult":[{"ModifiedDate":null,"OrderHeader":{"CustomerFirstName":"Olivier",
@@ -57,6 +67,9 @@ void *MainLoop::runThread(void *arg)
 					workorderList.push_back(Workorder(workorder.second));
 				//Treat every workorder in the list
 				//TODO : rendre interruptible à chaque wo
+
+				print(pt);
+
 				while(workorderList.size()>0)
 				{
 					TraiterWorkorder(workorderList.front());
