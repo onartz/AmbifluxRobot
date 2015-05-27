@@ -19,6 +19,9 @@ public:
 	string getFirstName();
 	string getLastName();
 
+	void setFirstName(string);
+	void setLastName(string);
+
 protected:
 	string myFirstName;
 	string myLastName;

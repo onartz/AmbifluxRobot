@@ -1,7 +1,9 @@
 #ifndef DEF_ORDERHEADER_H // Si la constante n'a pas été définie le fichier n'a jamais été inclus
 #define DEF_ORDERHEADER_H // On définit la constante pour que la prochaine fois le fichier ne soit plus inclus
 
+#define _WINSOCKAPI_ 
 #include "Location.h"
+#include "Person.h"
 #include <sstream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -15,6 +17,7 @@ using boost::property_tree::ptree;
 #define ORDERHEADER_STATUS_CANCELLED 4
 
 typedef Location * ptr_Location ;
+typedef Person * ptr_Person;
 
 //Commande
 class OrderHeader
@@ -39,12 +42,15 @@ public:
  
 
  //Accesseurs Set
-	 void setOrderHeaderId(int);
-	 void setOrderHeaderNo(char *);
-	 void setOrderHeaderType(char *);
-	 void setObjetDemandeExpress(char *);
-	 void setLocation(ptr_Location);
+	void setOrderHeaderId(int);
+	void setOrderHeaderNo(char *);
+	void setOrderHeaderType(char *);
+	void setObjetDemandeExpress(char *);
+	void setLocation(ptr_Location);
 	void setLocationId(int);
+	void setPerson(ptr_Person);
+
+	ptr_Person getDemandeur(void);
  
 
 protected:
@@ -52,6 +58,7 @@ protected:
 	char myOrderHeaderNo[12];	
 	char myOrderHeaderType[2];	
 	char myObjetDemandeExpress[256];
+	ptr_Person myDemandeur;
 	ptr_Location myLocation;
 	int myLocationId;
 

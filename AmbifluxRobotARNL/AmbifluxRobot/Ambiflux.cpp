@@ -83,20 +83,15 @@ Executer Ambiflux -GUI si tablette
 int main(int argc, char **argv)
 
 {
-//ArCepstral cepstral;
-  if( ! g_Cepstral.init() )
-  {
-    printf("Error initializing Cepstral!\n");
-    return -1;
-  }
-  //g_Cepstral.setVoice("Diane");
-  //g_Cepstral.speak("Cepstral is now initialized; proceding with the test.");
+
+ 
+  
   // Initialize Aria and Arnl global information
  
  /* Aria initialization: */
   Aria::init();
-  //ArLog::init(ArLog::StdErr, ArLog::Verbose);
-  ArLog::init(ArLog::File, ArLog::Verbose,"c:\\temp\\AmbifluxRobot.log",true);
+  ArLog::init(ArLog::StdErr, ArLog::Verbose);
+  //ArLog::init(ArLog::File, ArLog::Verbose,"c:\\temp\\AmbifluxRobot.log",true);
   ArLog::log(ArLog::Verbose, "Ambiflux Starting");
 
   // Create the sound queue.
@@ -131,6 +126,14 @@ int main(int argc, char **argv)
 
   //La tablette doit elle être utilisee?
   g_Tablette = parser.checkArgument("-GUI");
+  g_VoiceOff = parser.checkArgument("-VOICEOFF");
+  if(g_VoiceOff == false){
+	   if( ! g_Cepstral.init() )
+	  {
+		  ArLog::log(ArLog::Verbose, "Erreur init Cepstral");
+		  g_VoiceOff = true;
+	   }
+  }
 
   /* Pool de messages en provenance d'un client TCP
   Issu de l'implementation d'un modèle producteur/consommateur

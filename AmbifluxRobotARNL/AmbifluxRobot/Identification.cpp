@@ -17,11 +17,34 @@ void Identification::Identifier(Person *person)
 		return;
 
 	char * bufCardId = lecteurCarte.getCardId();
+	string firstName = "";
+	string lastName = "";
+	string cardId = "";
+	string emailAddress = "";
+
 	
 	//Recuperer infos de l utilisateur
 	string json = DALRest::getEmployeeByCardId(string(bufCardId));
+	
+	try{
+		ptree pt = JSONParser::parse(json);
+		firstName = string((char*)(pt.get_child("GetEmployeeByCardIdResult").get<std::string>("firstname").c_str()));
+		lastName = string((char*)(pt.get_child("GetEmployeeByCardIdResult").get<std::string>("lastname").c_str()));
+		cardId = string((char*)(pt.get_child("GetEmployeeByCardIdResult").get<std::string>("cardID").c_str()));
+		emailAddress = string((char*)(pt.get_child("GetEmployeeByCardIdResult").get<std::string>("emailAddress").c_str()));	
+		*person = Person(json);
+	}
+	catch(std::exception const&  ex)
+	{
+		cardId = string(bufCardId);
+		firstName = "";
+		lastName = "";
+		emailAddress = "";
+
+		printf("JSON Error. %s", ex.what());
+	}
 	//Person * operateur = new Person(json);
-	*person = Person(json);
+	
 	return ;
 }
 

@@ -3,7 +3,7 @@ Ambiant mode with database requests to treat Workorders
 */
 #include "MainLoop.h"
 
-void print(boost::property_tree::ptree const& pt)
+/*void print(boost::property_tree::ptree const& pt)
 {
     using boost::property_tree::ptree;
     ptree::const_iterator end = pt.end();
@@ -11,7 +11,7 @@ void print(boost::property_tree::ptree const& pt)
         std::cout << it->first << ": " << it->second.get_value<std::string>() << std::endl;
         print(it->second);
     }
-}
+}*/
 
 //Get workorders from DB
 			/*
@@ -68,7 +68,7 @@ void *MainLoop::runThread(void *arg)
 				//Treat every workorder in the list
 				//TODO : rendre interruptible à chaque wo
 
-				print(pt);
+				//print(pt);
 
 				while(workorderList.size()>0)
 				{

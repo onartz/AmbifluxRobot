@@ -30,6 +30,8 @@ void TraiterWorkorderRouting::handler()
 	TCPReceivedRequest req;
 	myCycleStartTime.setToNow();
 	string response="";
+	OrderHeader* oh = &(myWorkorderRouting.getWorkorder()->getOrderHeader());
+	string msg = "";
 	//Frame f;
 	switch(myState)
 	{
@@ -38,6 +40,10 @@ void TraiterWorkorderRouting::handler()
 		-------------------------------------------------------------*/
 
 		case STATE_TRANSPORT_START:
+			if(myNewState){
+				myNewState = false;	
+				ArLog::log(ArLog::Verbose, oh->getDemandeur()->getFirstName().c_str());		
+			}
 			ArLog::log(ArLog::Verbose, "Entering STATE_TRANSPORT_START\n");
 			//Initialisation de la position cible
 			strcpy(nextLocationName, myWorkorderRouting.getLocation().getLocationName());
@@ -202,12 +208,11 @@ void TraiterWorkorderRouting::handler()
 				setState(STATE_ATTENTE_FIN_CHARGEMENT_NOIHM);
 				break;
 			}
-			//g_Cepstral.speakf("Hello %s, can you give me %s?",myOperateur->getFirstName().c_str());
-			g_Cepstral.speakf("Hello %s, I need %s",myOperateur->getFirstName().c_str(),myWorkorderRouting.getWorkorder()->getOrderHeader().getObjetDemandeExpress());
+			if(!g_VoiceOff)
+				g_Cepstral.speakf("Hello %s, can you give me %s?",myOperateur->getFirstName().c_str(),myWorkorderRouting.getWorkorder()->getOrderHeader().getObjetDemandeExpress());
+			//g_Cepstral.speakf("Hello %s, I need %s",myOperateur->getFirstName().c_str(),myWorkorderRouting.getWorkorder()->getOrderHeader().getObjetDemandeExpress());
 		//g_Cepstral.speakf("Hello %s, I need you.",myOperateur->getFirstName().c_str());
 		
-			//g_Cepstral.spp
-			//g_Cepstral.sp
 			setState(STATE_ATTENTE_FIN_CHARGEMENT_NOIHM);
 			myWorkorderRouting.setResource(myOperateur);
 			break;
@@ -422,8 +427,73 @@ void TraiterWorkorderRouting::handler()
 				myWorkorderRouting.start();
 				ArLog::log(ArLog::Verbose, "WorkorderRouting %s demarre\n",myWorkorderRouting.getWorkorderRoutingNo());
 				DALRest::updateWorkorderRouting(&myWorkorderRouting);
-				setState(STATE_DEM_AFFICHAGE_LIVRAISON);			
+				if(g_Tablette)
+					setState(STATE_DEM_AFFICHAGE_LIVRAISON);
+				else
+					setState(STATE_LIVRAISON_NOIHM_IDENTIFICATION);
+				mySrma.play(SRMA::MSG_ARRIVED);	
 			break;
+
+		//celui qui réceptionne doit déclencher le début de l'operation en badgeant
+		case STATE_LIVRAISON_NOIHM_IDENTIFICATION:
+			//g_Cepstral.speak("Is there anybody here? Present your card to start.");
+			myOperateur = &Person();
+			Identification::Identifier(myOperateur);
+			//mySrma.play(SRMA::BUTTON_PRESSED);
+			//TODO : indiquer le cahrgement a realiser par voix
+			if(myOperateur->getCardId() == "")
+			{
+				//Personne, pas de personnel identifie, on estime que le travail est fait
+				//TODO : modifier
+				myResult=RES_OK;
+				setState(STATE_ATTENTE_FIN_LIVRAISON_NOIHM);
+				break;
+			}
+			//myWorkorderRouting.getWorkorder()->getOrderHeader().get
+			oh = &myWorkorderRouting.getWorkorder()->getOrderHeader();
+			msg = "Demandeur : "  + oh->getDemandeur()->getFirstName() + " " + oh->getDemandeur()->getLastName();
+			ArLog::log(ArLog::Verbose, msg.c_str());
+			msg = "Receveur : "  + myOperateur->getFirstName() + " " + myOperateur->getLastName();
+			ArLog::log(ArLog::Verbose, msg.c_str());
+
+			if(myOperateur->getFirstName() == oh ->getDemandeur()->getFirstName()
+				&& myOperateur->getLastName() == oh->getDemandeur()->getLastName())
+
+				if(!g_VoiceOff)
+					g_Cepstral.speakf("Hello %s, you asked for %s. I've got it. Use your card to validate.",myOperateur->getFirstName().c_str(),myWorkorderRouting.getWorkorder()->getOrderHeader().getObjetDemandeExpress());
+			else
+				if(!g_VoiceOff)
+					g_Cepstral.speakf("Hello %s, %s asked for %s. I've got it. Use your card to validate.",myOperateur->getFirstName().c_str(),oh->getDemandeur()->getFirstName().c_str(), oh->getDemandeur()->getLastName().c_str(), oh->getObjetDemandeExpress());
+	
+
+		
+			setState(STATE_ATTENTE_FIN_LIVRAISON_NOIHM);
+			myWorkorderRouting.setResource(myOperateur);
+			break;
+			
+		case STATE_ATTENTE_FIN_LIVRAISON_NOIHM:
+			if(myNewState)
+			{
+				ArLog::log(ArLog::Verbose, "Entering STATE_ATTENTE_FIN_LIVRAISON_NOIHM\n");
+				myNewState = false;
+				break;
+			}
+			//La fin est signalée par le badge de l'utilisateur
+			if(Identification::DetectCard() == true)
+			{
+				//myWorkorderRouting.setStateId((WorkorderRouting::WORKORDERROUTING_STATE)atoi(req.frame.msg[3].c_str()));
+				myResult=RES_OK;
+				mySrma.play(SRMA::BUTTON_PRESSED);
+				//TODO : say goodbye
+				setState(STATE_LIVRAISON_FIN);
+				break;
+			}
+			myResult = RES_FAILED;
+			//TODO : say goodbye
+			setState(STATE_LIVRAISON_FIN);
+			break;
+
+
 
 			case STATE_DEM_AFFICHAGE_LIVRAISON:
 			if(myNewState)
@@ -557,7 +627,7 @@ void TraiterWorkorderRouting::handler()
 				{
 					case RES_OK:
 						mySrma.setLoad(SRMA::UNLOADED);
-						mySrma.play(SRMA::BUTTON_PRESSED);
+						//mySrma.play(SRMA::BUTTON_PRESSED);
 										
 						ArLog::log(ArLog::Verbose, "WorkorderRouting %s cloture\n",myWorkorderRouting.getWorkorderRoutingNo());
 						myWorkorderRouting.close();
