@@ -265,6 +265,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Globals.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Identification.cpp"
 				>
 			</File>
@@ -360,6 +364,10 @@
 			</File>
 			<File
 				RelativePath=".\Include\Frame.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Include\Globals.h"
 				>
 			</File>
 			<File

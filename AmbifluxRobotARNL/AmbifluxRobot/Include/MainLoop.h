@@ -18,6 +18,8 @@ public:
 	//Constructeur
 	//MainLoop(SRMA &);
 	MainLoop(SRMA &, Pool<TCPReceivedRequest> *);
+	MainLoop(SRMA &);
+	
 	//~MainLoop();
 
 protected:

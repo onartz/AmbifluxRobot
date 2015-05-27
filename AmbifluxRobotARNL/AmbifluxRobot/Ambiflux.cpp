@@ -11,8 +11,10 @@ A chaque réception d'un nouveau message, la listOfIncomingMessage est mise à jou
 #include "TCPRequestsLoop.h"
 #include "ArSoundsQueue.h"
 #include "ArSoundPlayer.h"
-
+#include "Globals.h"
 #include "Srma.h"
+
+IhmCommunicationThread ihm;
 
 /* Key handler for the escape key: shutdown all of Aria. */
 void escape(void)
@@ -55,7 +57,6 @@ void logOptions(const char *progname)
   ArLog::log(ArLog::Verbose, "parameters as -name <value>, see params/arnl.p for list.");
   ArLog::log(ArLog::Verbose, "For example, -map <map file>.");
   Aria::logOptions();
-
 }
 
 bool gyroErrored = false;
@@ -75,16 +76,16 @@ const char* getGyroStatusString(ArRobot* robot)
 }
 
 
-
+/*
+Executer Ambiflux -GUI si tablette
+*/
 int main(int argc, char **argv)
 {
   // Initialize Aria and Arnl global information
  
  /* Aria initialization: */
   Aria::init();
-
   ArLog::init(ArLog::File, ArLog::Verbose,"c:\\temp\\AmbifluxRobot.log",true);
-
   ArLog::log(ArLog::Verbose, "Ambiflux Starting");
 
   // Create the sound queue.
@@ -100,45 +101,7 @@ int main(int argc, char **argv)
 
   // Run the sound queue in a new thread
   soundQueue.runAsync();
-  /* Pool de messages en provenance de la tablette
-  Issu de l'implementation d'un modèle producteur/consommateur
-  pour les messages entrants. Plusieurs thread y accèdent
-  Tread-safe (mutex)*/
-  //Pool<Frame> messagePool;
- /* Pool de messages en provenance d'un client TCP
-  Issu de l'implementation d'un modèle producteur/consommateur
-  pour les messages entrants. Plusieurs thread y accèdent
-  Tread-safe (mutex)*/
-  /*TODO : A remplacer par tcpReceivedPool */
-  //Pool<Frame> tcpMessagePool;
-
-  /* Pool de messages en provenance d'un client TCP
-  Issu de l'implementation d'un modèle producteur/consommateur
-  pour les messages entrants. Plusieurs thread y accèdent
-  Tread-safe (mutex)*/
-  Pool<TCPReceivedRequest> tcpReceivedPool;
-
-  /*Create our thread to communicate with iPad
-   Server start on port 7171 to receive requests from ipad
-   A client is created on port 7474 to request iPad
-   */
-
-	IhmCommunicationThread ihm(7171, &tcpReceivedPool);
-   //On s'abonne à la réception de message par la classe IhmCommunicationThread
-  //Todo : A supprimer ?
-  //ArGlobalFunctor1<Frame> functMessageReceived(&CallbackIhmReceived);
-  //ihm.setCallback(&functMessageReceived); 
   
- /* while(!ihm.connect() == true)
-  {
-  //if(ihm.connect()!=0)
-	soundQueue.play("c:\\temp\\ShortCircuit.wav");
-	ArUtil::sleep(2000);
-  }*/
-
-
-  ihm.runAsync(); 
-
 
   /* Create our client object. This is the object which connects with a remote
    * server over the network, and which manages all of our communication with it
@@ -150,9 +113,41 @@ int main(int argc, char **argv)
    * examples of making requests and reading/writing the data in packets.
    */
   ArClientBase client;
- 
-  /* Aria components use this to get options off the command line: */
+	
+  
+   /* Aria components use this to get options off the command line: */
   ArArgumentParser parser(&argc, argv);
+
+  //La tablette doit elle être utilisee?
+  g_Tablette = parser.checkArgument("-GUI");
+
+  /* Pool de messages en provenance d'un client TCP
+  Issu de l'implementation d'un modèle producteur/consommateur
+  pour les messages entrants. Plusieurs thread y accèdent
+  Tread-safe (mutex)*/
+  Pool<TCPReceivedRequest> tcpReceivedPool;
+
+  /*if(g_Tablette == true)
+  {*/
+	  /*Create our thread to communicate with iPad
+	   Server start on port 7171 to receive requests from ipad
+	   A client is created on port 7474 to request iPad
+	   */
+
+		IhmCommunicationThread ihm(7171, &tcpReceivedPool);
+	   //On s'abonne à la réception de message par la classe IhmCommunicationThread
+	  //Todo : A supprimer ?
+	  //ArGlobalFunctor1<Frame> functMessageReceived(&CallbackIhmReceived);
+	  //ihm.setCallback(&functMessageReceived); 
+	  
+	 /* while(!ihm.connect() == true)
+	  {
+	  //if(ihm.connect()!=0)
+		soundQueue.play("c:\\temp\\ShortCircuit.wav");
+		ArUtil::sleep(2000);
+	  }*/
+	  ihm.runAsync();
+  //}
 
   /* This will be used to connect our client to the server, including
    * various bits of handshaking (e.g. sending a password, retrieving a list
@@ -181,13 +176,12 @@ int main(int argc, char **argv)
 
   printf("Connected to server.\n");
 
-  client.setRobotName(client.getHost()); // include server name in log messages
- client.logDataList();
+	client.setRobotName(client.getHost()); // include server name in log messages
+	client.logDataList();
 
-
-  ///* Create a key handler and also tell Aria about it */
-  ArKeyHandler keyHandler;
-  Aria::setKeyHandler(&keyHandler);
+	///* Create a key handler and also tell Aria about it */
+	ArKeyHandler keyHandler;
+	Aria::setKeyHandler(&keyHandler);
 
   /* Global escape-key handler to shut everythnig down */
   ArGlobalFunctor escapeCB(&escape);
@@ -238,9 +232,22 @@ if(!client.dataExists("gotoGoal") )
 	string strSRMA = DALRest::getResourceById("9");
 	SRMA srma(strSRMA,client, outputHandler, ihm, &soundQueue);
 
+	MainLoop myLoop(srma, &tcpReceivedPool);
+	myLoop.runAsync();
+
 	//Loop du mode Ambiant
-	//MainLoop myLoop(srma, &tcpReceivedPool);
-	//myLoop.runAsync();
+	/*if(g_Tablette == true)
+	{
+		
+		myLoop(srma, &tcpReceivedPool);
+		myLoop.runAsync();
+	}*/
+	/*else
+	{
+		MainLoop myLoop(srma);
+		myLoop.runAsync();
+	{*/
+	
 	
 	//Thread loop : TCP commands
 	//Produces messages in tcpMessagePool
@@ -248,7 +255,7 @@ if(!client.dataExists("gotoGoal") )
 	myServerLoop.runAsync();
  
 	//Traitement des requetes TCP
-	//Consulmes messages in tcpMessagePool
+	//Consumes messages in tcpMessagePool
 	TCPRequestsLoop myTCPRequestsLoop(srma, &tcpReceivedPool);
 	myTCPRequestsLoop.runAsync();
 
@@ -273,6 +280,3 @@ if(!client.dataExists("gotoGoal") )
   Aria::shutdown();
   return 0;
 }
-
-
-

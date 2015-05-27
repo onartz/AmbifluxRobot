@@ -6,6 +6,7 @@
 using namespace std;
 
 //Constructors
+IhmCommunicationThread::IhmCommunicationThread(){}
 IhmCommunicationThread::IhmCommunicationThread(int port, Pool<TCPReceivedRequest>* messagePool ):
 myMessagePool(messagePool),
 myHandleMsgReceivedCB(this,&IhmCommunicationThread::handleMsgReceived),

@@ -41,9 +41,9 @@ FAILED\r\nGetActiveForm\r\n\r\n
 //iMAc
 //#define HOSTIPADDRESS	"10.10.68.127"
 //ipad
-#define HOSTIPADDRESS	"10.10.68.2"
+//#define HOSTIPADDRESS	"10.10.68.2"
 //Local
-//#define HOSTIPADDRESS	"127.0.0.1"
+#define HOSTIPADDRESS	"127.0.0.1"
 //Portable
 //#define HOSTIPADDRESS	"10.10.68.5"
 
@@ -62,6 +62,7 @@ public :
 	}; 
 
 	//Constructor
+	IhmCommunicationThread();
 	IhmCommunicationThread(int port, Pool<TCPReceivedRequest> *);
 	virtual ~IhmCommunicationThread();
 	virtual void * runThread(void *arg);

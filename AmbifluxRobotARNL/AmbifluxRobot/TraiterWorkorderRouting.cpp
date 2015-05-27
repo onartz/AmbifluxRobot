@@ -189,11 +189,13 @@ void TraiterWorkorderRouting::handler()
 			{
 				myNewState = false;
 				ArLog::log(ArLog::Verbose, "Entering STATE_CHARGEMENT_IDENTIFICATION\n");		
-				//On envoie la requete d'ouverture du Form
-				response = myIhm.sendRequest("OpenForm IdentificationVC\n",true);
-				//si pas la bonne réponse de la tablette
-				if(myIhm.testResponse(response, "OpenForm IdentificationVC\n") != myIhm.OK)
+				//if(g_Tablette == true){
+					//On envoie la requete d'ouverture du Form
+					response = myIhm.sendRequest("OpenForm IdentificationVC\n",true);
+					//si pas la bonne réponse de la tablette
+					if(myIhm.testResponse(response, "OpenForm IdentificationVC\n") != myIhm.OK)
 					break;
+				//}
 			}
 			myOperateur = &Person();
 			mySrma.play(SRMA::BUTTON_PRESSED);
@@ -207,6 +209,9 @@ void TraiterWorkorderRouting::handler()
 
 			if(myOperateur->getCardId() == "")
 			{
+				//Personne, pas de personnel identifie, on estime que le travail est fait
+				//TODO : modifier
+				myResult=RES_OK;
 				setState(STATE_CHARGEMENT_FIN);
 				break;
 			}
@@ -386,7 +391,7 @@ void TraiterWorkorderRouting::handler()
 					break;	
 				}
 			}
-			setState(STATE_DEM_AFFICHAGE_LIVRAISON);
+			setState(STATE_ATTENTE_LIVRAISON_TERMINE);
 			break;
 
 			case STATE_ATTENTE_LIVRAISON_TERMINE:
@@ -394,9 +399,18 @@ void TraiterWorkorderRouting::handler()
 				{
 					ArLog::log(ArLog::Verbose, "Entering STATE_ATTENTE_LIVRAISON_TERMINE\n");
 					myNewState = false;
+					//La fin est signalée par le badge de l'utilisateur
+					if(Identification::DetectCard() == true)
+					{
+						//myWorkorderRouting.setStateId((WorkorderRouting::WORKORDERROUTING_STATE)atoi(req.frame.msg[3].c_str()));
+						myResult=RES_OK;
+						mySrma.play(SRMA::BUTTON_PRESSED);
+						setState(STATE_LIVRAISON_FIN);
+						break;
+					}
 				}
-				//Timeout chargement trop long
-				if(myStateStartTime.mSecSince() > TIMEOUT_DUREE_LIVRAISON*1000)
+				//Timeout livraison trop longue
+				if(myStateStartTime.mSecSince() > TIMEOUT_DUREE_LIVRAISON*20)
 				{
 					myResult=RES_TIMEOUT;
 					//Faire qque chose
@@ -459,8 +473,17 @@ void TraiterWorkorderRouting::handler()
 						setState(STATE_LIVRAISON_FIN);
 						break;
 					}*/
+
+				
 					//TODO : On peut boucler à l'infini. Faire en sorte de pouvoir en sortir
-					setState(STATE_DEM_FERMETURE_LIVRAISON);
+					response = myIhm.sendRequest(bufRequestIhm,true);
+					if(myIhm.testResponse(response, bufRequestIhm) != myIhm.OK)
+					{
+						response = myIhm.sendRequest(bufRequestIhm,true);
+						break;	
+					}	
+					myResult = RES_OK;
+					setState(STATE_LIVRAISON_FIN);
 					break;
 				}
 

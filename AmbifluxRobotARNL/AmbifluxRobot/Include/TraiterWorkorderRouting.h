@@ -8,6 +8,7 @@
 #include "Srma.h"
 #include "Identification.h"
 #include "MessagePool.h"
+#include "Globals.h"
 
 #define TIMEOUT_DUREE_CHARGEMENT 1000
 #define TIMEOUT_DUREE_LIVRAISON 1000

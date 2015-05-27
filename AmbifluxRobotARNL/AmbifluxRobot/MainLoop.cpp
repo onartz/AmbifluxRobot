@@ -28,6 +28,9 @@ using namespace std;
 /* Liste des Workorders en attente de traitement */
 std::list<Workorder> workorderList;
 
+MainLoop::MainLoop(SRMA &srma):mySrma(srma){
+	myRunning = true;
+}
 
 MainLoop::MainLoop(SRMA &srma, Pool<TCPReceivedRequest> *messagePool):myMessagePool(messagePool),
 mySrma(srma)
