@@ -19,6 +19,7 @@ public:
 	//MainLoop(SRMA &);
 	MainLoop(SRMA &, Pool<TCPReceivedRequest> *);
 	MainLoop(SRMA &);
+	void setTCPReceivedPool(Pool<TCPReceivedRequest> *);
 	
 	//~MainLoop();
 

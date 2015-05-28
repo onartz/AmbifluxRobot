@@ -33,6 +33,10 @@ Person::Person(string str)
 }
 
 string Person::getCardId(){return myCardId;}
+string Person::getFirstName(){return myFirstName;}
+string Person::getLastName(){return myLastName;}
+void Person::setFirstName(std::string firstName){myFirstName = firstName;}
+void Person::setLastName(std::string lastName){myLastName = lastName;}
 
 
 
