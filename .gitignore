@@ -142,3 +142,9 @@ AmbifluxRobotARNL/TestProject1/TestProject1.vcproj.AIP-TELMA.telma.user
 AmbifluxRobotARNL/TestProject1/UnitTest1.cpp
 AmbifluxRobotARNL/AmbifluxRobot.suo
 AmbifluxRobotARNL/AmbifluxRobot.vsmdi
+*.ppk
+*.dll
+*.ppk
+Ambiflux_Forge_Public_Key
+AmbifluxRobot_Forge_Public_Key
+temptoto/
