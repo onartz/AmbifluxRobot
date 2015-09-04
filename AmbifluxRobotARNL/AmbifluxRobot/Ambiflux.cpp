@@ -90,8 +90,8 @@ int main(int argc, char **argv)
  
  /* Aria initialization: */
   Aria::init();
-  ArLog::init(ArLog::StdErr, ArLog::Verbose);
-  //ArLog::init(ArLog::File, ArLog::Verbose,"c:\\temp\\AmbifluxRobot.log",true);
+  //ArLog::init(ArLog::StdErr, ArLog::Verbose);
+  ArLog::init(ArLog::File, ArLog::Verbose,"c:\\temp\\AmbifluxRobot.log",true);
   ArLog::log(ArLog::Verbose, "Ambiflux Starting");
 
   // Create the sound queue.
