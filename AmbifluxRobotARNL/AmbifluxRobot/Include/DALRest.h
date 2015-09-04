@@ -12,9 +12,9 @@ using namespace std;
 
 //#define HOST	193.55.104.245	//aip-sqlaipl
 #define WCFSERVICEPORT	80
-#define WCFHOSTIPADDRESS	"193.55.104.238"
-#define HOSTWEBADDRESS	"193.55.104.238"
-#define HOSTURL		"http://193.55.104.238"
+#define WCFHOSTIPADDRESS	"100.74.39.204"
+#define HOSTWEBADDRESS	"100.74.39.204"
+#define HOSTURL		"http://100.74.39.204"
 #define SERVICE	"/AmbifluxWcfService/Ambiflux.svc/json/"
 #define REQUEST	"srma"
 #define REQ_LOGSRMA	"logSRMA"

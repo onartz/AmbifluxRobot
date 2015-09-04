@@ -97,7 +97,7 @@ string DALRest::sendRequest(string requestType, string param)
 	if(strcmp(sock.readString(),"HTTP/1.1 200 OK")!=0)
 	{
 			sock.close();
-			ArLog::log(ArLog::Verbose, "socketClientExample: Server error: \r\n%s", buff);
+			//ArLog::log(ArLog::Verbose, "socketClientExample: Server error: \r\n%s", buff);
 			return(string(""));
 	}
 

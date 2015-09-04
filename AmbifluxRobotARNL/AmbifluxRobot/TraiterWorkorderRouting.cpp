@@ -229,8 +229,11 @@ void TraiterWorkorderRouting::handler()
 			{
 				//myWorkorderRouting.setStateId((WorkorderRouting::WORKORDERROUTING_STATE)atoi(req.frame.msg[3].c_str()));
 				myResult=RES_OK;
-				mySrma.play(SRMA::BUTTON_PRESSED);
+				//mySrma.play(SRMA::BUTTON_PRESSED);
 				//TODO : say goodbye
+				if(!g_VoiceOff)
+					g_Cepstral.speakf("Thank you %s. It was a pleasure.",myOperateur->getFirstName().c_str());
+	
 				setState(STATE_CHARGEMENT_FIN);
 				break;
 			}
@@ -458,15 +461,18 @@ void TraiterWorkorderRouting::handler()
 
 			if(myOperateur->getFirstName() == oh ->getDemandeur()->getFirstName()
 				&& myOperateur->getLastName() == oh->getDemandeur()->getLastName())
-
+			{
 				if(!g_VoiceOff)
 					g_Cepstral.speakf("Hello %s, you asked for %s. I've got it. Use your card to validate.",myOperateur->getFirstName().c_str(),myWorkorderRouting.getWorkorder()->getOrderHeader().getObjetDemandeExpress());
 			else
 				if(!g_VoiceOff)
 					g_Cepstral.speakf("Hello %s, %s asked for %s. I've got it. Use your card to validate.",myOperateur->getFirstName().c_str(),oh->getDemandeur()->getFirstName().c_str(), oh->getDemandeur()->getLastName().c_str(), oh->getObjetDemandeExpress());
-	
-
+			}
+			else
+				if(!g_VoiceOff)
+					g_Cepstral.speakf("Hello, you asked for %s. I've got it. Use your card to validate.",myWorkorderRouting.getWorkorder()->getOrderHeader().getObjetDemandeExpress());
 		
+
 			setState(STATE_ATTENTE_FIN_LIVRAISON_NOIHM);
 			myWorkorderRouting.setResource(myOperateur);
 			break;
@@ -483,11 +489,16 @@ void TraiterWorkorderRouting::handler()
 			{
 				//myWorkorderRouting.setStateId((WorkorderRouting::WORKORDERROUTING_STATE)atoi(req.frame.msg[3].c_str()));
 				myResult=RES_OK;
-				mySrma.play(SRMA::BUTTON_PRESSED);
+				if(!g_VoiceOff)
+					g_Cepstral.speakf("Thank you and see you soon.");
+	
+				//mySrma.play(SRMA::BUTTON_PRESSED);
 				//TODO : say goodbye
 				setState(STATE_LIVRAISON_FIN);
 				break;
 			}
+			if(!g_VoiceOff)
+					g_Cepstral.speakf("I go home.");
 			myResult = RES_FAILED;
 			//TODO : say goodbye
 			setState(STATE_LIVRAISON_FIN);
